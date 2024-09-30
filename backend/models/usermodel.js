@@ -10,4 +10,5 @@ const userschema = mongoose.Schema({
     timestamps: true // {{ edit_1 }}: Enable timestamps
 })
 
-const usermodel = mongoose.model
+const usermodel = mongoose.model("user" , userschema)
+module.exports =usermodel
