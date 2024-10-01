@@ -5,8 +5,7 @@ import {
   Container, TextField, Button, Typography, Box, Grid, Paper, Divider 
 } from '@mui/material';
 import Cookies from 'js-cookie'
-import { Navigate, useNavigate } from 'react-router-dom';
-import { log } from 'node:console';
+import {  useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
   const [isRegister, setIsRegister] = useState(true); // Switch between Login/Register
@@ -25,10 +24,10 @@ const AuthPage = () => {
     website: '',
     user:''
   });
-  
+  const navigate = useNavigate()
   const logout = async () => {
     Cookies.remove('user');
-    Navigate("/")
+    navigate("/")
   };
   
   // Handle user registration or login
@@ -36,15 +35,15 @@ const AuthPage = () => {
     e.preventDefault();
     const url = !showKYCForm ? 'http://localhost:4000/auth/register' : 'http://localhost:4000/auth/kyc';
     try {
-      const { respdata } = await axios.post(`/auth/register`, { username, password , email });
-      // alert(respdata.message);
-      // console.log(respdata);
-      if (respdata.message==="Registration successful") {
-        Cookies.set('user', respdata.userId); // Store user details in cookies
-        setKycDetails({ ...kycDetails, user : respdata.userId })
+      const { data } = await axios.post(`/auth/register`, { username, password , email });
+      alert(data.message);
+      console.log(data);
+      if (data.message==="Registration successful!") {
+        Cookies.set('user', data.userId); // Store user details in cookies
+        setKycDetails({ ...kycDetails, user : data.userId })
       }
     } catch (error) {
-      alert('Error: ' + error.response.respdata.error);
+      alert('Error: ' + error.response.data.error);
     }
     setShowKYCForm(!showKYCForm); //
     return
@@ -62,10 +61,12 @@ const AuthPage = () => {
   const handleKYCSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { respdata } = await axios.post('http://localhost:4000/auth/kyc', kycDetails); // Send KYC details to server
+      const { data } = await axios.post('http://localhost:4000/auth/kyc', kycDetails); // Send KYC details to server
+      console.log(data);
       alert('KYC submitted successfully');
+      Cookies.set('startup', data.startup);
+      navigate("/home")
     } catch (error) {
-      alert('KYC submission failed: ' + error.response.respdata.error);
     }
   };
 

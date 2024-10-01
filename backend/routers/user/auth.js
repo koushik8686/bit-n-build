@@ -20,7 +20,6 @@ router.post('/register', async (req, res) => {
     // Save the user to the database
     const savedUser = await newUser.save();
     // Store user ID in session
-    req.session.userId = savedUser._id;
     res.status(200).json({ message: 'Registration successful!' , userId: savedUser._id });
   } catch (error) {
     console.log(error);
@@ -59,7 +58,7 @@ router.post('/kyc', async (req, res) => {
       const savedKYC = await newKYC.save();
       // Link the KYC to the logged-in user
       await User.findByIdAndUpdate(user, { startup: savedKYC._id });
-      res.status(200).json({ message: 'KYC details submitted successfully' });
+      res.status(200).json({ message: 'KYC details submitted successfully' , startup : savedKYC._id });
     } catch (error) {
       res.status(500).json({ error: 'Failed to submit KYC details' });
     }
