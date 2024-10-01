@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 });
 
 app.use("/auth" , require("./routers/user/auth"))
+app.use("/admin" , require("./routers/admin/auth"))
 
 io.on('connection', (socket) => {
   console.log(socket);
