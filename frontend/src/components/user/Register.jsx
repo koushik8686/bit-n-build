@@ -5,7 +5,7 @@ import {
   Container, TextField, Button, Typography, Box, Grid, Paper, Divider 
 } from '@mui/material';
 import Cookies from 'js-cookie'
-import {  useNavigate } from 'react-router-dom';
+import {  Link, useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
   const [isRegister, setIsRegister] = useState(true); // Switch between Login/Register
@@ -125,14 +125,8 @@ const AuthPage = () => {
                 onError={() => console.log('Google login failed')}
               />
             </Grid>
-
-            <Button 
-              fullWidth 
-              sx={{ mt: 3 }} 
-              variant="outlined" 
-              onClick={() => setIsRegister(!isRegister)}>
-              {isRegister ? 'Already have an account? Login' : 'Don\'t have an account? Register'}
-            </Button>
+            <Link to={'/login'}>Login</Link>
+            
           </>
         ) : (
           <>
@@ -215,7 +209,6 @@ const AuthPage = () => {
           </>
         )}
       </Paper>
-      <button onClick={logout}>LogOut</button>
     </Container>
   );
 };

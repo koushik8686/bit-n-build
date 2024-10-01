@@ -10,8 +10,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('/api/login', { username, password });
-      alert(data.message);
+      const { data } = await axios.post('/auth/login', { username, password });
     } catch (error) {
       alert('Error: ' + error.response.data.error);
     }
