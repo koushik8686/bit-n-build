@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const EIRSchema = new Schema({
-  startup_id: { type: String },                                 // Startup ID for identification
+  startup_id: { type: String },         
+  startup_name: { type: String, required: true },            // Name of the startup// Startup ID for identification
   entrepreneur: {
     name: { type: String, required: true },                    // Entrepreneur's name
     background: { type: String, required: true },              // Description of experience or expertise
@@ -13,9 +14,9 @@ const EIRSchema = new Schema({
     mentorship_startups: [{ type: String }],                   // List of startups they are mentoring
     personal_goals: { type: String },                          // Personal goals during the program
   },
-  startup_progress: {
-    startup_name: { type: String, required: true },            // Name of the startup
-    current_stage: { type: String, enum: ['Idea', 'MVP', 'Scaling', 'Revenue Generating'], default: 'Idea' } // Current stage of the startup
+  status: {
+    status: { type: String, enum: ['Applied', 'Approved', 'Rejected', 'In Progress', 'Completed'], default: 'Applied' }, // Status of the grant
+    decision_date: { type: Date }                                // Date of the grant decision
   },
   created_at: { type: Date, default: Date.now }                // Date when the EIR program was started
 });
