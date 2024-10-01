@@ -20,21 +20,14 @@ const StartupKYCSchema = new Schema({
 
 // Progress Tracking Schema
 const ProgressSchema = new Schema({
-  month: { type: String, required: true },
-  milestones: [{
-    title: { type: String, required: true },
-    description: { type: String },
-    achieved_date: { type: Date }
-  }],
-  issues_faced: [{
-    description: { type: String }
-  }],
+  month:String,
+  milestones: String,
+  issues_faced:String,
   financials: {
     revenue: { type: Number },
     expenses: { type: Number }
   },
-  updated_at: { type: Date, default: Date.now }
-});
+} );
 
 
 // Report Collection Schema (monthly)
@@ -73,6 +66,6 @@ const StartupSchema = new Schema({
   reports: [ReportSchema],
   messages: [MessageSchema],
   grants: [GrantSchema]
-});
+} , {timestamps:true});
 
 module.exports = mongoose.model('Startup', StartupSchema);

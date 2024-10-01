@@ -1,51 +1,80 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import { Container, Paper, Typography, Box, TextField, Button } from '@mui/material'; // Ensure to import Material-UI components
+import image from '../../assets/StartX.png';
 
 const AdminLogin = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-       const response =  await axios.post('/admin/login' , {username , password})
-       console.log(response);
-       if (response.data.message === "Login successful") {
-         Cookies.set('admin' , "!2345")
-         navigate("/admin")
-       }
+        try {
+            const response = await axios.post('/admin/login', { username, password });
+            console.log(response);
+            if (response.data.message === "Login successful") {
+                Cookies.set('admin', "!2345");
+                navigate("/admin");
+            } else {
+                alert('Login failed: ' + response.data.message); // Added error handling
+            }
+        } catch (error) {
+            console.error('Error during login:', error); // Log error for debugging
+            alert('Login failed: ' + error.response?.data?.message || 'Unknown error occurred'); // Inform user of error
+        }
     };
 
     return (
-        <div className="flex items-center justify-center h-screen bg-gray-100">
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-2xl mb-4">Login</h2>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Username</label>
-                    <input
-                        type="text"
+        <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+            {/* Left side - Login Form */}
+            <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: '400px', flex: 1 }}>
+                <Typography variant="h4" component="h1" gutterBottom align="center">
+                    Login
+                </Typography>
+
+                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+                    {/* Username Field */}
+                    <TextField
+                        label="Username"
+                        fullWidth
+                        margin="normal"
+                        type='text '
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="mt-1 block w-full border rounded p-2"
                         required
                     />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Password</label>
-                    <input
+                    <TextField
+                        label="Password"
+                        fullWidth
+                        margin="normal"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="mt-1 block w-full border rounded p-2"
                         required
                     />
-                </div>
-                <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
-                    Login
-                </button>
-            </form>
-        </div>
+                    <Button 
+                        type="submit" 
+                        variant="contained" 
+                        color="primary" 
+                        fullWidth 
+                        sx={{ mt: 2 }}>
+                        Login
+                    </Button>
+                </Box>
+            </Paper>
+
+            {/* Right side - Image */}
+            <Box sx={{ flex: 1, display: { xs: 'none', md: 'block' }, maxWidth: '50%', paddingLeft: 3 }}>
+                <img 
+                    src={image} // Ensure 'image' is defined and available in the component
+                    alt="Auth Visual" 
+                    style={{ width: '100%', borderRadius: '10px', objectFit: 'cover' }}
+                />
+            </Box>
+        </Container>
     );
 };
 

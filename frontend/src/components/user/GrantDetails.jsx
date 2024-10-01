@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './grantschema.css'; // Import the CSS file
+import axios from 'axios';
+import Cookie from 'js-cookie'
 
 export default function GrantDetails({ grant }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,7 +16,7 @@ export default function GrantDetails({ grant }) {
     total_funding_required: '',
     funding_breakdown: [{ item: '', amount: '' }],
   });
-
+  const startup = Cookie.get('startup')
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -56,8 +58,9 @@ export default function GrantDetails({ grant }) {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
+    const response = await axios.post(`/submit/funds/${startup}` ,formData)
     console.log('Form Data Submitted:', formData);
     closeModal(); // Close the modal after form submission
   };
@@ -81,11 +84,17 @@ export default function GrantDetails({ grant }) {
 
       {/* Grant Application Details Div */}
       <div className="grant-container bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Grant Application</h2>
-        <p><strong>Status:</strong> {grant.status}</p>
-        <p><strong>Amount Requested:</strong> ${grant.amount_requested}</p>
-        {grant.amount_approved && <p><strong>Amount Approved:</strong> ${grant.amount_approved}</p>}
-        {grant.disbursal_date && <p><strong>Disbursal Date:</strong> {new Date(grant.disbursal_date).toDateString()}</p>}
+        {grant.map((g, index) => ( // Use map to iterate over the grant array
+          <div key={index}> {/* Add a key for each item */}
+            <h2 className="text-2xl font-bold mb-4">{g.project_proposal.project_title}</h2> {/* Display project title */}
+            <p><strong>Description:</strong> {g.project_proposal.description}</p> {/* Display project description */}
+            <p><strong>Amount:</strong> {g.project_proposal.budget.total_funding_required}</p> {/* Display project description */}
+            <p><strong>Status:</strong> {g.grant_status.status}</p> {/* Display grant status */}
+            {g.project_proposal.objectives && g.project_proposal.objectives.length > 0 && (
+              <p><strong>Objectives:</strong> {g.project_proposal.objectives.join(', ')}</p> // Display objectives if available
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Modal Form */}

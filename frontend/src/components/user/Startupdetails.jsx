@@ -12,8 +12,8 @@ export default function StartupDetails({ kyc, progress }) {
       <p><strong>Industry:</strong> {kyc.company_details.industry}</p>
       <p><strong>Website:</strong> <a href={kyc.company_details.website} target="_blank" rel="noreferrer">{kyc.company_details.website}</a></p>
 
-      <h3 className="text-xl font-bold mt-6">Latest Progress</h3>
-      {progress.map((monthData, index) => (
+      {/* <h3 className="text-xl font-bold mt-6">Latest Progress</h3> */}
+      {/* {progress.map((monthData, index) => (
         <div key={index} className="mt-4">
           <h4 className="text-lg font-semibold">{monthData.month}</h4>
           <p><strong>Milestone:</strong> {monthData.milestones[0].title} - {monthData.milestones[0].description}</p>
@@ -21,7 +21,7 @@ export default function StartupDetails({ kyc, progress }) {
           <p><strong>Revenue:</strong> ${monthData.financials.revenue}</p>
           <p><strong>Expenses:</strong> ${monthData.financials.expenses}</p>
         </div>
-      ))}
+      ))} */}
     </div>
   );
 }

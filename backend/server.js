@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 app.use("/auth" , require("./routers/user/auth"))
 app.use("/admin" , require("./routers/admin/auth"))
 app.use('/user' , require("./routers/user/home"))
-
+app.use('/submit' , require("./routers/user/forms"))
 
 io.on('connection', (socket) => {
   console.log(socket);

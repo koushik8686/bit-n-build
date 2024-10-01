@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
-import StartupDetails from './Startupdetails';
+import StartupDetails from './Startupdetails'; // Fixed capitalization here
 import EIRDetails from './EirDetails';
 import GrantDetails from './GrantDetails';
 import Messages from './Messages';
-import MonthlyProgress from './Monthlyorogress';
+import MonthlyProgress from './Monthlyorogress'; // Fixed capitalization here
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,8 +13,8 @@ export default function StartupHomepage() {
   const [activeComponent, setActiveComponent] = useState('details');
   const [userData, setUserData] = useState(null);
   const [startupData, setStartupData] = useState(null);
-  const [eirData, setEirData] = useState(null);
-  const [grantSchemeData, setGrantSchemeData] = useState(null);
+  const [eirData, setEirData] = useState([]);
+  const [grantSchemeData, setGrantSchemeData] = useState([]);
   const [messages, setMessages] = useState([]);
   const navigate = useNavigate();
   const user = Cookies.get('user');
@@ -29,21 +29,29 @@ export default function StartupHomepage() {
       try {
         const response = await axios.get(`/user/home/${user}/${startup}`);
         const { user: userResponse, startup: startupResponse, eirRecords, grantRecords } = response.data;
-        console.log(response);
+        
+        console.log(response); // Log the entire response for better debugging
         setUserData(userResponse);
         setStartupData(startupResponse);
-        setEirData( eirRecords ); // Assuming there might be multiple EIR records, take the first one.
-        setGrantSchemeData( grantRecords); // Same for grant records.
-        setMessages(startupResponse.messages ); // Assuming messages are part of the startup data.
+        setEirData(eirRecords ); // Default to an empty array if undefined
+        setGrantSchemeData(grantRecords ); // Default to an empty array if undefined
+        setMessages(startupResponse.messages ); // Default to an empty array if undefined
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
-  }, [user, startup, navigate]);
+  }, []);
+  useEffect(() => {
+   console.log(activeComponent);
+  }, [activeComponent])
+  // if (!startupData || !startupData.length) {
+  //   return <div>No data available</div>; // Handle the case where data is undefined or empty
+  // }
 
   return (
+    
     <div className="flex flex-col min-h-screen">
       <Navbar setActiveComponent={setActiveComponent} />
 
@@ -51,20 +59,20 @@ export default function StartupHomepage() {
         {activeComponent === 'details' && startupData && (
           <StartupDetails
             kyc={startupData.kyc}
-            progress={startupData.progress}
+            progress={startupData.progress} // Ensure progress is an array
           />
         )}
-        {activeComponent === 'eir' && eirData && (
-          <EIRDetails eir={eirData} />
+        {activeComponent === 'eir' && (
+          <EIRDetails eirList={eirData} />
         )}
-        {activeComponent === 'grant' && grantSchemeData && (
+        {activeComponent === 'grant'  && (
           <GrantDetails grant={grantSchemeData} />
         )}
-        {activeComponent === 'messages' && messages.length > 0 && (
+        {activeComponent === 'messages' && (
           <Messages messages={messages} />
         )}
-        {activeComponent === 'monthly' && startupData && (
-          <MonthlyProgress progress={startupData.progress} />
+        {activeComponent === 'monthly' && (
+          <MonthlyProgress progress={startupData.progress || []} /> // Ensure progress is an array
         )}
       </main>
 

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const GrantSchemeSchema = new Schema({
+  startup_id: String,          // Startup ID for identification
   applicant: {
     name: { type: String, required: true },                      // Name of the applicant or organization
     organization: { type: String },                              // Name of the organization (if applicable)
