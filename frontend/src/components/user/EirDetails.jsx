@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import './eirapplication.css'; // Import the CSS file
+import './eirapplication.css';
 
 
 export default function EIRDetails({ eir }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    startup_id: eir.startup_id || '', // Assume eir contains startup_id
+    startup_id: eir.startup_id || '', 
     entrepreneur: {
       name: '',
       background: '',
-      previous_ventures: [''], // Initial input for previous ventures
+      previous_ventures: [''], 
       industry_experience: '',
     },
-    startup_name: '', // Startup Name field
+    startup_name: '',
     objectives: {
-      mentorship_startups: [''], // Initial input for mentorship startups
+      mentorship_startups: [''], 
       personal_goals: '',
     },
   });
@@ -55,12 +55,12 @@ export default function EIRDetails({ eir }) {
     e.preventDefault();
     console.log('Form Data Submitted:', formData);
     closeModal();
-    // You can also send the data to your backend here
+
   };
 
   return (
     <>
-      {/* Apply Button Positioned Below Navbar */}
+   
       <div className="apply-button-container">
         <button
           className="apply-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -70,7 +70,7 @@ export default function EIRDetails({ eir }) {
         </button>
       </div>
 
-      {/* EIR Application Div */}
+     
       <div className="eir-container bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">EIR Application</h2>
         <p><strong>Status:</strong> {eir.status}</p>
@@ -82,7 +82,7 @@ export default function EIRDetails({ eir }) {
               <h2 className="text-xl font-bold mb-4">EIR Application Form</h2>
               <div className="form-scroll">
                 <form onSubmit={handleSubmit}>
-                  {/* Entrepreneur Section */}
+                 
                   <h3 className="font-bold mb-2">Entrepreneur Information</h3>
                   <div className="mb-4">
                     <label className="block text-gray-700">Name</label>
@@ -130,8 +130,6 @@ export default function EIRDetails({ eir }) {
                       />
                     ))}
                   </div>
-
-                  {/* Startup Name Section */}
                   <div className="mb-4">
                     <label className="block text-gray-700">Startup Name</label>
                     <input
@@ -144,7 +142,7 @@ export default function EIRDetails({ eir }) {
                     />
                   </div>
 
-                  {/* Objectives Section */}
+                 
                   <h3 className="font-bold mb-2">Objectives</h3>
                   <div className="mb-4">
                     <label className="block text-gray-700">Mentorship Startups</label>
