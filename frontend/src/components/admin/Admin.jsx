@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import EIRRequests from './EirRequests';
+import GrantApplicationComponent from './GrantRequests';
+import StartupMessages from './Messages';
 
 const startups = [
   { id: 1, name: "TechInnovate", industry: "AI", status: "Active" },
@@ -35,15 +38,161 @@ const dummyEirRequests = [
   ];
   
   // Placeholder function to handle accept/reject actions
-  const handleAction = (id, action) => {
-    console.log(`Request ID: ${id} - Action: ${action}`);
-    // Make your API call here (e.g., POST/PUT request to update status in MongoDB)
-  };
 
-const grantRequests = [
-  { id: 1, startup: "HealthTech", amountRequested: 50000, status: "Approved" },
-  { id: 2, startup: "TechInnovate", amountRequested: 75000, status: "Applied" },
-];
+  const grantSchemes=[
+    // Sample data - replace this with actual data fetched from your backend
+    {
+      _id: '1',
+      applicant: {
+        name: 'John Doe',
+        organization: 'Tech Innovators',
+        contact_details: {
+          email: 'john@techinnovators.com',
+          phone: '123-456-7890',
+          address: '123 Tech St, Innovation City, IN 12345'
+        }
+      },
+      project_proposal: {
+        project_title: 'AI for Good',
+        description: 'Developing AI solutions to address social issues',
+        objectives: ['Improve education access', 'Enhance healthcare delivery', 'Reduce carbon footprint'],
+        budget: {
+          total_funding_required: 500000,
+          funding_breakdown: [
+            { item: 'Research and Development', amount: 300000 },
+            { item: 'Equipment', amount: 150000 },
+            { item: 'Marketing', amount: 50000 }
+          ]
+        }
+      },
+      grant_status: {
+        status: 'Applied',
+        decision_date: new Date('2024-06-01')
+      },
+      created_at: new Date('2024-01-15')
+    },
+    {
+      _id: '1',
+      applicant: {
+        name: 'John Doe',
+        organization: 'Tech Innovators',
+        contact_details: {
+          email: 'john@techinnovators.com',
+          phone: '123-456-7890',
+          address: '123 Tech St, Innovation City, IN 12345'
+        }
+      },
+      project_proposal: {
+        project_title: 'AI for Good',
+        description: 'Developing AI solutions to address social issues',
+        objectives: ['Improve education access', 'Enhance healthcare delivery', 'Reduce carbon footprint'],
+        budget: {
+          total_funding_required: 500000,
+          funding_breakdown: [
+            { item: 'Research and Development', amount: 300000 },
+            { item: 'Equipment', amount: 150000 },
+            { item: 'Marketing', amount: 50000 }
+          ]
+        }
+      },
+      grant_status: {
+        status: 'Applied',
+        decision_date: new Date('2024-06-01')
+      },
+      created_at: new Date('2024-01-15')
+    },
+    {
+      _id: '1',
+      applicant: {
+        name: 'John Doe',
+        organization: 'Tech Innovators',
+        contact_details: {
+          email: 'john@techinnovators.com',
+          phone: '123-456-7890',
+          address: '123 Tech St, Innovation City, IN 12345'
+        }
+      },
+      project_proposal: {
+        project_title: 'AI for Good',
+        description: 'Developing AI solutions to address social issues',
+        objectives: ['Improve education access', 'Enhance healthcare delivery', 'Reduce carbon footprint'],
+        budget: {
+          total_funding_required: 500000,
+          funding_breakdown: [
+            { item: 'Research and Development', amount: 300000 },
+            { item: 'Equipment', amount: 150000 },
+            { item: 'Marketing', amount: 50000 }
+          ]
+        }
+      },
+      grant_status: {
+        status: 'Applied',
+        decision_date: new Date('2024-06-01')
+      },
+      created_at: new Date('2024-01-15')
+    },
+    {
+      _id: '1',
+      applicant: {
+        name: 'John Doe',
+        organization: 'Tech Innovators',
+        contact_details: {
+          email: 'john@techinnovators.com',
+          phone: '123-456-7890',
+          address: '123 Tech St, Innovation City, IN 12345'
+        }
+      },
+      project_proposal: {
+        project_title: 'AI for Good',
+        description: 'Developing AI solutions to address social issues',
+        objectives: ['Improve education access', 'Enhance healthcare delivery', 'Reduce carbon footprint'],
+        budget: {
+          total_funding_required: 500000,
+          funding_breakdown: [
+            { item: 'Research and Development', amount: 300000 },
+            { item: 'Equipment', amount: 150000 },
+            { item: 'Marketing', amount: 50000 }
+          ]
+        }
+      },
+      grant_status: {
+        status: 'Applied',
+        decision_date: new Date('2024-06-01')
+      },
+      created_at: new Date('2024-01-15')
+    },
+    {
+      _id: '1',
+      applicant: {
+        name: 'John Doe',
+        organization: 'Tech Innovators',
+        contact_details: {
+          email: 'john@techinnovators.com',
+          phone: '123-456-7890',
+          address: '123 Tech St, Innovation City, IN 12345'
+        }
+      },
+      project_proposal: {
+        project_title: 'AI for Good',
+        description: 'Developing AI solutions to address social issues',
+        objectives: ['Improve education access', 'Enhance healthcare delivery', 'Reduce carbon footprint'],
+        budget: {
+          total_funding_required: 500000,
+          funding_breakdown: [
+            { item: 'Research and Development', amount: 300000 },
+            { item: 'Equipment', amount: 150000 },
+            { item: 'Marketing', amount: 50000 }
+          ]
+        }
+      },
+      grant_status: {
+        status: 'Applied',
+        decision_date: new Date('2024-06-01')
+      },
+      created_at: new Date('2024-01-15')
+    },
+    // Add more sample grant schemes here if needed
+  ];
 
 const messages = [
   { id: 1, startup: "GreenEnergy", message: "Monthly report submitted", date: "2024-01-28" },
@@ -105,91 +254,21 @@ export default function Admin() {
             )}
           </div>
         )}
-
 {selectedTab === 'eir' && (
-  <div>
-    {dummyEirRequests.map((request) => (
-      <div key={request._id} style={bigBoxStyle}>
-        <h2 style={headerStyle}>{request.entrepreneur.name}'s Request</h2>
-
-        {/* Entrepreneur Details */}
-        <h3>Entrepreneur Details</h3>
-        <p><strong>Name:</strong> {request.entrepreneur.name}</p>
-        <p><strong>Background:</strong> {request.entrepreneur.background}</p>
-        <p><strong>Previous Ventures:</strong> {request.entrepreneur.previous_ventures.join(', ') || 'None'}</p>
-        <p><strong>Industry Experience:</strong> {request.entrepreneur.industry_experience || 'N/A'}</p>
-
-        {/* Objectives */}
-        <h3>Objectives</h3>
-        <p><strong>Mentorship Startups:</strong> {request.objectives.mentorship_startups.join(', ')}</p>
-        <p><strong>Personal Goals:</strong> {request.objectives.personal_goals}</p>
-
-        {/* Startup Progress */}
-        <h3>Startup Progress</h3>
-        {request.startup_progress.map((progress, index) => (
-          <div key={index}>
-            <p><strong>Startup Name:</strong> {progress.startup_name}</p>
-            <p><strong>Current Stage:</strong> {progress.current_stage}</p>
-          </div>
-        ))}
-
-        {/* Accept/Reject Buttons */}
-        <div style={buttonContainerStyle}>
-          <button style={buttonStyle}>Accept</button>
-          <button style={{ ...buttonStyle, backgroundColor: 'red' }}>Reject</button>
-        </div>
-      </div>
-    ))}
-  </div>
+    <EIRRequests dummyEirRequests={dummyEirRequests} />
 )}
 
+
 {selectedTab === 'grants' && (
-  <div>
-    <h2>Grant Requests</h2>
-    <table style={tableStyle}>
-      <thead>
-        <tr>
-          <th>Startup</th>
-          <th>Amount Requested</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {grantRequests.map((request) => (
-          <tr key={request.id}>
-            <td>{request.startup}</td>
-            <td>${request.amountRequested}</td>
-            <td>{request.status}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+  <GrantApplicationComponent 
+  grantSchemes={grantSchemes} 
+  />
 )}
 
 {selectedTab === 'messages' && (
-  <div>
-    <h2>Messages</h2>
-    <table style={tableStyle}>
-      <thead>
-        <tr>
-          <th>Startup</th>
-          <th>Message</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {messages.map((message) => (
-          <tr key={message.id}>
-            <td>{message.startup}</td>
-            <td>{message.message}</td>
-            <td>{message.date}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+  <StartupMessages/>
 )}
+
       </div>
     </div>
   );
