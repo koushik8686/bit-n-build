@@ -10,6 +10,10 @@ router.post('/register', async (req, res) => {
   console.log(req.body);
   try {
     // Hash the password
+    const exists = await User.findOne({ email: email})
+    if (exists) {
+        return res.status(400).json({ message: 'Email already exists' });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     // Create a new user
     const newUser = new User({
@@ -76,7 +80,7 @@ router.post('/login', async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) return res.status(400).json({ error: 'Invalid password' });
 
-    res.status(200).json({ message: 'Login successful' , userId :user._id });
+    res.status(200).json({ message: 'Login successful' , userId :user._id , startup : user.startup});
   } catch (error) {
     res.status(500).json({ error: 'Failed to log in' });
   }

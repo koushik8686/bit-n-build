@@ -2,15 +2,22 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { Container, TextField, Button, Typography, Box, Paper, Divider, Grid } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie'
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const { data } = await axios.post('/auth/login', { username, password });
+      if (data.message === 'Login successful') {
+        Cookie.set('user' , data.userId)
+        Cookie.set('startup', data.startup)
+        navigate('/home')
+      }
     } catch (error) {
       alert('Error: ' + error.response.data.error);
     }

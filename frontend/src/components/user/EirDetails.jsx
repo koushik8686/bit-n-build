@@ -60,7 +60,6 @@ export default function EIRDetails({ eir }) {
 
   return (
     <>
-   
       <div className="apply-button-container">
         <button
           className="apply-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -69,7 +68,6 @@ export default function EIRDetails({ eir }) {
           Apply for EIR
         </button>
       </div>
-
      
       <div className="eir-container bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">EIR Application</h2>
