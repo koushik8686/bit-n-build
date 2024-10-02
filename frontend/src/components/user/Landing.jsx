@@ -15,12 +15,7 @@ export default function AnimatedLandingPage() {
         className="p-4"
       >
         <nav className="flex justify-end space-x-8">
-          <Link to="/" className="text-white hover:text-gray-300 underline">
-            Home
-          </Link>
-          <Link to="/admin/login" className="text-white hover:text-gray-300">
-            Admin
-          </Link>
+        
           <Link to="/login" className="text-white hover:text-gray-300">
             Login
           </Link>
@@ -45,8 +40,7 @@ export default function AnimatedLandingPage() {
               <span className="text-[#f0f0f0]">StartX</span>
             </h1>
             <p className="text-lg text-gray-300 mb-6 max-w-md">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum nec sollicitudin arcu. Fusce sed imperdiet lectus, nec convallis turpis.
-            </p>
+            Comprehensive Startup Progress Dashboard: Track Financial Performance, Revenue, and Expenses with Real-Time Charts and Milestone Updates for Strategic Growth Insights.            </p>
             <motion.button
               className={`px-6 py-2 text-lg font-semibold rounded-md transition-colors duration-300 ${
                 isHovered
@@ -58,7 +52,7 @@ export default function AnimatedLandingPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              More Info
+              <Link to= {"/home"} >Get Started</Link>
             </motion.button>
           </motion.div>
 
@@ -113,11 +107,7 @@ export default function AnimatedLandingPage() {
             <div className="w-full md:w-1/3 mb-6 md:mb-0">
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li>
-                  <Link to="/admin" className="hover:text-gray-300">
-                    Admin
-                  </Link>
-                </li>
+             
                 <li>
                   <Link to="/register" className="hover:text-gray-300">
                     Register

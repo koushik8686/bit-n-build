@@ -1,94 +1,159 @@
 import React, { useEffect, useState } from 'react';
 
 const EIRRequests = ({ eirRequests }) => {
-  const [loading, setLoading] = useState(false); // Loading state if needed
-  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [updatedRequests, setUpdatedRequests] = useState(eirRequests);
+  const [openRequest, setOpenRequest] = useState(null);
+  const [disabledButtons, setDisabledButtons] = useState({});
 
+  // Sync requests on prop update
   useEffect(() => {
-    // No need to fetch data again, as it's passed down as props
-  }, []); // No dependencies needed since we're getting data from props
+    setUpdatedRequests(eirRequests.reverse());
+  }, [eirRequests]);
 
-  const handleAccept = (requestId) => {
-    // Add your logic for accepting the request
-    console.log(`Accepted request with ID: ${requestId}`);
+  // Toggle details for a specific request
+  const toggleRequestDetails = (id) => {
+    setOpenRequest(openRequest === id ? null : id);
   };
 
-  const handleReject = (requestId) => {
-    // Add your logic for rejecting the request
-    console.log(`Rejected request with ID: ${requestId}`);
+  // Unified request handler for actions (accept, reject, in-progress)
+  const handleRequestUpdate = async (actionType, requestId) => {
+    setLoading(true);
+    try {
+      const apiEndpoint = `admin/eir/${actionType}`;
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId }),
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${actionType} request`);
+
+      const updatedRequest = await response.json();
+
+      setUpdatedRequests((prev) =>
+        prev.map((req) =>
+          req._id === updatedRequest.updatedRequest._id ? updatedRequest.updatedRequest : req
+        )
+      );
+
+      const disableConfig =
+        actionType === 'in-progress'
+          ? { inProgress: true }
+          : { accept: true, reject: true, inProgress: true };
+
+      setDisabledButtons((prev) => ({ ...prev, [requestId]: disableConfig }));
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const renderRequestItem = (request) => {
-    return (
-      <div style={bigBoxStyle} key={request._id}>
-        <h2 style={headerStyle}>{request.entrepreneur?.name}'s Request</h2>
-        <p><strong>Entrepreneur:</strong> {request.entrepreneur?.name || 'N/A'}</p>
-        <p><strong>Business Idea:</strong> {request.business_idea || 'N/A'}</p>
-        <p><strong>Summary:</strong> {request.summary || 'N/A'}</p>
-        <div style={buttonContainerStyle}>
-          <button style={acceptButtonStyle} onClick={() => handleAccept(request._id)}>Accept</button>
-          <button style={rejectButtonStyle} onClick={() => handleReject(request._id)}>Reject</button>
-        </div>
-      </div>
-    );
-  };
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
-
+  // Render request items
   return (
-    <div>
-      <h2 style={{ color: '#333', marginBottom: '15px' }}>EIR Requests</h2>
-      {eirRequests.length > 0 ? (
-        eirRequests.map(renderRequestItem)
-      ) : (
-        <p>No EIR requests available.</p>
-      )}
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold mb-6">EIR Requests</h1>
+      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p>Loading...</p>}
+
+      {updatedRequests.map((request) => {
+        const isDisabled = disabledButtons[request._id] || {};
+
+        return (
+          <div key={request._id} className="border rounded-lg shadow-md mb-6 p-5 bg-white">
+            <div className="flex justify-between items-center">
+              <h2
+                className="text-xl font-semibold cursor-pointer"
+                onClick={() => toggleRequestDetails(request._id)}
+              >
+                {request.entrepreneur?.name}'s Request
+                <span className="ml-2">{openRequest === request._id ? '▲' : '▼'}</span>
+              </h2>
+              <p className="text-gray-500">
+                Created on {new Date(request.created_at).toLocaleDateString()}
+              </p>
+            </div>
+
+            {openRequest === request._id && (
+              <div className="mt-4 bg-gray-100 p-4 rounded-lg">
+                <p>
+                  <strong>Entrepreneur:</strong> {request.entrepreneur?.name || 'N/A'}
+                </p>
+                <p>
+                  <strong>Business Idea:</strong> {request.business_idea || 'N/A'}
+                </p>
+                <p>
+                  <strong>Summary:</strong> {request.summary || 'N/A'}
+                </p>
+                <p>
+                  <strong>Mentorship Startups:</strong>{' '}
+                  {request.objectives?.mentorship_startups?.join(', ') || 'N/A'}
+                </p>
+                <p>
+                  <strong>Personal Goals:</strong> {request.objectives?.personal_goals || 'N/A'}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center">
+              <div className="flex-1">
+                <span
+                  className={`px-3 py-1 rounded font-semibold ${
+                    request.status?.status === 'Accepted'
+                      ? 'bg-green-200 text-green-800'
+                      : request.status?.status === 'Rejected'
+                      ? 'bg-red-200 text-red-800'
+                      : 'bg-yellow-200 text-yellow-800'
+                  }`}
+                >
+                  {request.status?.status || 'N/A'}
+                </span>
+              </div>
+
+              <div className="flex space-x-2">
+                <button
+                  className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                    isDisabled.accept || isDisabled.reject || isDisabled.inProgress
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                  onClick={() => handleRequestUpdate('accept', request._id)}
+                  disabled={isDisabled.accept || isDisabled.reject || isDisabled.inProgress}
+                >
+                  Accept
+                </button>
+
+                <button
+                  className={`bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                    isDisabled.accept || isDisabled.reject || isDisabled.inProgress
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                  onClick={() => handleRequestUpdate('reject', request._id)}
+                  disabled={isDisabled.accept || isDisabled.reject || isDisabled.inProgress}
+                >
+                  Reject
+                </button>
+
+                <button
+                  className={`bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                    isDisabled.inProgress ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  onClick={() => handleRequestUpdate('in-progress', request._id)}
+                  disabled={isDisabled.inProgress}
+                >
+                  Mark as In Progress
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
-};
-
-// Example styling
-const bigBoxStyle = {
-  border: '1px solid #ccc',
-  borderRadius: '5px',
-  padding: '15px',
-  marginBottom: '20px',
-  backgroundColor: '#f9f9f9',
-};
-
-const headerStyle = {
-  marginBottom: '10px',
-  color: '#007bff',
-};
-
-const buttonContainerStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  marginTop: '10px',
-};
-
-const acceptButtonStyle = {
-  backgroundColor: '#28a745',
-  color: '#fff',
-  padding: '10px',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const rejectButtonStyle = {
-  backgroundColor: '#dc3545',
-  color: '#fff',
-  padding: '10px',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
 };
 
 export default EIRRequests;

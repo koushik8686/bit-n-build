@@ -2,6 +2,15 @@ const express = require('express');
 const User = require('../../models/usermodel');
 const Startup = require("../../models/startupmodel")
 const router = express.Router();
+var nodemailer = require('nodemailer');
+const senderemail = "hexart637@gmail.com";
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: senderemail,
+        pass: 'zetk dsdm imvx keoa'
+    }
+});
 
 // Registration route
 router.post('/register', async (req, res) => {
@@ -20,7 +29,23 @@ router.post('/register', async (req, res) => {
       password, // store the plain text password directly
       email
     });
-
+    await newUser.save();
+    const mailOptions = {
+        from: senderemail,
+        to: email,
+        subject: 'startX',
+        html: `
+         <h1>Thanks for Registering your startup in our website</h1>
+        `
+    };
+    // Send the verification email
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log("Mail sent successfully to receiver");
+        }
+    });
     // Save the user to the database
     const savedUser = await newUser.save();
 

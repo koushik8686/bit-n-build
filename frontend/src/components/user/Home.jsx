@@ -23,7 +23,7 @@ export default function StartupHomepage() {
 
   useEffect(() => {
     if (!user || !startup) {
-      return navigate('/');
+      return navigate('/login');
     }
 
     const fetchData = async () => {
@@ -74,7 +74,7 @@ export default function StartupHomepage() {
       </main>
 
       <footer className="bg-gray-200 text-gray-800 py-4 text-center">
-        © 2023 StartupHub. All rights reserved.
+        StartX. .
       </footer>
     </div>
   );

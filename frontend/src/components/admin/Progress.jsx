@@ -6,7 +6,9 @@ import {
   CartesianGrid, Tooltip, Legend,
   ResponsiveContainer
 } from 'recharts';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // Import Link
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 // Card component to display individual financial metrics
 const Card = ({ title, value, icon }) => (
@@ -26,7 +28,8 @@ export default function EnhancedStartupProgress() {
   const [data, setData] = useState([]); // State to hold fetched data
   const [activeIndex, setActiveIndex] = useState(0);
   const { startup } = useParams();
-
+  const navigate = useNavigate();
+  
   // Fetch data from the API on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -49,9 +52,25 @@ export default function EnhancedStartupProgress() {
   const totalExpenses = Array.isArray(data) ? data.reduce((sum, entry) => sum + entry.financials.expenses, 0) : 0;
   const profit = totalRevenue - totalExpenses;
 
+  useEffect(() => {
+    const admin = Cookies.get('admin');
+    if (!admin) {
+      navigate('/admin/login');
+    }
+  }, [navigate]);
+
   return (
     <div className="container mx-auto p-4 space-y-8 bg-blue-50 min-h-screen">
       <h1 className="text-4xl font-bold text-center mb-8 text-blue-800">Startup Progress Dashboard</h1>
+
+      {/* Back Button */}
+      <div className="mb-4">
+        <Link to="/admin">
+          <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+            Back to Admin
+          </button>
+        </Link>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -86,7 +105,7 @@ export default function EnhancedStartupProgress() {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="milestones" />
+            <XAxis dataKey="month" />
             <YAxis />
             <Tooltip />
             <Legend />
@@ -115,31 +134,13 @@ export default function EnhancedStartupProgress() {
                 <h3 className="font-medium text-blue-800">{item.milestones}</h3>
                 <p className="text-sm text-blue-600">{item.month || 'N/A'}</p> {/* Display 'N/A' if month is not available */}
               </div>
-              {index < data.length - 1 && (
-                <button
-                  onClick={() => setActiveIndex(index + 1)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                >
-                  Next
-                </button>
-              )}
             </div>
           ))}
         </div>
       </div>
 
       {/* Startup Image */}
-      <div className="mt-8 text-center">
-        <img
-          src="/placeholder.svg?height=200&width=400"
-          alt="Startup Progress Illustration"
-          className="mx-auto rounded-lg shadow-md"
-          style={{
-            background: 'linear-gradient(135deg, #bae6fd 0%, #3b82f6 100%)'
-          }}
-        />
-        <p className="mt-4 text-blue-800 font-medium">Our journey from idea to success!</p>
-      </div>
+      
     </div>
   );
 }
