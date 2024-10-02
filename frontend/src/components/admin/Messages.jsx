@@ -1,9 +1,9 @@
-'use client';
 
 import { useState, useEffect } from 'react';
 import { Send, ChevronRight, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+const io = require('socket.io-client');
+const socket = io.connect("http://localhost:4000");
 
 export default function StartupMessages() {
   const [startups, setStartups] = useState([]);
@@ -11,7 +11,6 @@ export default function StartupMessages() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [unreadMessages, setUnreadMessages] = useState({});
-  const socket = io.connect("http://localhost:4000");
 
   // Fetch startups on component mount
   useEffect(() => {
@@ -23,23 +22,27 @@ export default function StartupMessages() {
         console.error('Error fetching startups:', error);
       }
     };
-
+  
     fetchStartups();
-
+  
     // Socket event listener for receiving messages
     socket.on('receiveMessage', (messageData) => {
       console.log("Message received: ", messageData);
-      // Add the new message to the messages array
-      setMessages((prevMessages) => [...prevMessages, messageData]);
+      setMessages((prevMessages) => (prevMessages ? [...prevMessages, messageData] : [messageData]));
     });
-
-    // Cleanup on unmount
+    
+  
+    socket.on('connect', () => {
+      console.log('Connected to the server with ID:', socket.id);
+    });
+  
+    // Cleanup the socket on unmount to avoid memory leaks
     return () => {
-      socket.disconnect();
       socket.off('receiveMessage');
+      socket.off('connect');
     };
   }, []);
-
+  
   // Handle startup selection and message fetching
   const handleStartupClick = (startupId) => {
     setSelectedStartup(startupId);
@@ -56,7 +59,6 @@ export default function StartupMessages() {
     };
 
     fetchMessages();
-    setUnreadMessages((prev) => ({ ...prev, [startupId]: 0 }));
   };
 
   // Handle back button click
@@ -67,24 +69,20 @@ export default function StartupMessages() {
   // Handle sending a single message
   const handleSendMessage = () => {
     if (inputMessage.trim() === '') return;
-
+    const newMessage = {
+      message: inputMessage,
+      sender: 'admin',
+    };
     // Send message through socket
     socket.emit('sendMessage', {
       roomId: selectedStartup, // Use roomId as your event structure
-      messageData: {
-        message: inputMessage,
-        sender: 'user',
-      },
+      messageData: newMessage,  // Send the constructed message
     });
-
-    // Update unread messages count
-    setUnreadMessages((prev) => ({
-      ...prev,
-      [selectedStartup]: (prev[selectedStartup] || 0) + 1,
-    }));
+    // Add the new message to the messages array locally
 
     setInputMessage('');
   };
+  
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -108,15 +106,15 @@ export default function StartupMessages() {
             )}
           </div>
           <div className="flex-1 p-4 overflow-y-auto">
-            {messages.map((message, index) => (
+            { messages&& messages.map((message, index) => (
               <div
                 key={index}
                 className={`mb-4 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}
               >
                 <span
                   className={`inline-block p-2 rounded-lg ${
-                    message.sender === 'user'
-                      ? 'bg-blue-500 text-white'
+                    message.sender === 'admin'
+                      ? 'bg-blue-500 text-white text-right'
                       : 'bg-gray-300'
                   }`}
                 >
@@ -146,7 +144,8 @@ export default function StartupMessages() {
         // Startups list view
         <div className="flex flex-col h-full">
           <h1 className="text-2xl font-bold p-4 bg-white border-b">Startups</h1>
-
+          <input type='text' />
+          <button>Send to all</button>
           <div className="flex-1 overflow-y-auto">
             <ul>
               {startups.map((startup) => (

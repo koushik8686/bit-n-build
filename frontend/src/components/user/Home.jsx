@@ -69,7 +69,7 @@ export default function StartupHomepage() {
           <GrantDetails grant={grantSchemeData} />
         )}
         {activeComponent === 'messages' && (
-          <Messages messages={messages} />
+          <Messages />
         )}
         {activeComponent === 'monthly' && (
           <MonthlyProgress progress={startupData.progress || []} /> // Ensure progress is an array

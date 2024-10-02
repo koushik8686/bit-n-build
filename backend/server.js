@@ -43,21 +43,64 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    // User joins a room based on their userId from cookies
-    socket.on('joinRoom', (userId) => {
-        socket.join(userId); // Join the room with userId
-        console.log(`User ${socket.id} joined room ${userId}`);
+    // User joins a room based on their startupid from cookies
+    socket.on('joinRoom', (startupid) => {
+        socket.join(startupid); // Join the room with startupid
+        console.log(`User ${socket.id} joined room ${startupid}`);
     });
 
     // Listen for messages from users in the room
     socket.on('sendMessage', async ({ roomId, messageData }) => {
         console.log("Message received from user in room:", roomId, messageData);
-        io.emit('receiveMessage', messageData);
         try {
+            io.to(roomId).emit('receiveMessage', messageData);
+            console.log(`Message sent to room ${roomId}:`, messageData);
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+        
+                try {
             // Find or create the message document for the specific startup
             const existingMessages = await messageModel.findOne({ startup_id: roomId });
             if (existingMessages) {
                console.log(existingMessages.startup_id, );
+                // If messages already exist, push the new message to the messages array
+                existingMessages.messsages[existingMessages.messsages.length]={
+                    message: messageData.message,
+                    sender: messageData.sender,
+                    created_at: new Date(),
+                };
+                await existingMessages.save(); // Save the updated document
+            } else {
+                // If no messages exist, create a new document
+                const newMessage = new messageModel({
+                    startup_id: roomId,
+                    messages: [{
+                        message: messageData.message,
+                        sender: messageData.sender,
+                        created_at: new Date(),
+                    }],
+                });
+                await newMessage.save(); // Save the new document
+            }
+            console.log("Message saved to database.");
+        } catch (error) {
+            console.error("Error saving message to database:", error);
+        }
+    });
+    socket.on('BroadcastMessage', async ({ roomId, messageData }) => {
+        console.log("Message received from user in room:", roomId, messageData);
+        try {
+            io.emit('receiveMessage', messageData);
+            console.log(`Message sent to room ${roomId}:`, messageData);
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+                try {
+            // Find or create the message document for the specific startup
+            const existingMessages = await messageModel.findOne({ startup_id: roomId });
+            if (existingMessages) {
+               console.log(existingMessages.startup_id );
                 // If messages already exist, push the new message to the messages array
                 existingMessages.messsages[existingMessages.messsages.length]={
                     message: messageData.message,
