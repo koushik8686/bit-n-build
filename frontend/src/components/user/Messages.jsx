@@ -9,12 +9,12 @@ export default function Messages({ initialMessages }) {
 
   useEffect(() => {
     // Check for the user's ID from cookies
-    const userId = Cookies.get('user'); // Get the user ID from cookies
-
+    const startup = Cookies.get('startup'); // Get the user ID from cookies
+ 
     // Join the room based on the user's ID
-    if (userId) {
-      socket.emit('joinRoom', userId);
-      console.log(`User joined room: ${userId}`);
+    if (startup) {
+      socket.emit('joinRoom', startup);
+      console.log(`User joined room: ${startup}`);
     } else {
       console.error('User ID not found in cookies.');
     }
@@ -46,10 +46,10 @@ export default function Messages({ initialMessages }) {
       };
 
       // Get the user's ID from cookies
-      const userId = Cookies.get('user'); // Assuming this is the same as userId
-      if (userId) {
+      const startup = Cookies.get('startup'); // Assuming this is the same as startup
+      if (startup) {
         // Emit 'sendMessage' event to server with the user's ID and message data
-        socket.emit('sendMessage', { roomId: userId, messageData });
+        socket.emit('sendMessage', { roomId: startup, messageData });
         // Optionally update UI immediately before confirmation from the server
         setNewMessage(''); // Clear the input field
       } else {

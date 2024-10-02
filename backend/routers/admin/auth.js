@@ -3,6 +3,7 @@ const router = express.Router();
 const Startup = require('../../models/startupmodel');
 const EIR = require('../../models/EirSchema'); // Update with your EIR model path
 const GrantScheme = require('../../models/GrandSchemeSchema');
+const Messages = require("../../models/adminmessages") 
 
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -18,13 +19,25 @@ router.post('/login', async (req, res) => {
     }
   });
 
-  router.get('/Startups', async (req, res) => {
+
+  router.get('/startups', async (req, res) => {
     try {
       // Fetch all startups and only the required fields
       const startups = await Startup.find();
+      console.log(startups);
+      res.status(200).send(startups);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server Error' });
+    }
+  });
+  router.get('/messages/:id', async (req, res) => {
+    try {
+      // Fetch all startups and only the required fields
+      const messages = await Messages.findOne({startup_id: req.params.id});
       // Format the data for the response
       // Send the formatted data
-      res.status(200).send(startups);
+      res.status(200).send(messages);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Server Error' });

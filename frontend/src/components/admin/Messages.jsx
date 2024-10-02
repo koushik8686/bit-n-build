@@ -1,92 +1,90 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Send, ChevronRight, ArrowLeft } from 'lucide-react'
-
-// Mock data for startups
-const startups = [
-  { id: 1, name: 'TechNova' },
-  { id: 2, name: 'GreenEnergy' },
-  { id: 3, name: 'HealthAI' },
-  { id: 4, name: 'SpaceX' },
-  { id: 5, name: 'FinTech Solutions' },
-]
-
-// Mock data for messages
-const initialMessages = {
-  1: [
-    { id: 1, text: 'Hello TechNova!', sender: 'user' },
-    { id: 2, text: 'Hi there! How can we help?', sender: 'startup' },
-  ],
-  2: [
-    { id: 1, text: 'Interested in your green solutions', sender: 'user' },
-  ],
-  3: [
-    { id: 1, text: 'Can you tell me more about your AI in healthcare?', sender: 'user' },
-  ],
-  4: [
-    { id: 1, text: 'When is the next rocket launch?', sender: 'user' },
-  ],
-  5: [
-    { id: 1, text: 'I\'d like to know about your financial products', sender: 'user' },
-  ],
-}
+import { useState, useEffect } from 'react';
+import { Send, ChevronRight, ArrowLeft } from 'lucide-react';
+import axios from 'axios';
+import { io } from 'socket.io-client';
 
 export default function StartupMessages() {
-  const [selectedStartup, setSelectedStartup] = useState(null)
-  const [messages, setMessages] = useState(initialMessages)
-  const [inputMessage, setInputMessage] = useState('')
-  const [broadcastMessage, setBroadcastMessage] = useState('')
-  const [unreadMessages, setUnreadMessages] = useState({})
+  const [startups, setStartups] = useState([]);
+  const [selectedStartup, setSelectedStartup] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [unreadMessages, setUnreadMessages] = useState({});
+  const socket = io.connect("http://localhost:4000");
 
+  // Fetch startups on component mount
+  useEffect(() => {
+    const fetchStartups = async () => {
+      try {
+        const response = await axios.get('/admin/startups');
+        setStartups(response.data);
+      } catch (error) {
+        console.error('Error fetching startups:', error);
+      }
+    };
+
+    fetchStartups();
+
+    // Socket event listener for receiving messages
+    socket.on('receiveMessage', (messageData) => {
+      console.log("Message received: ", messageData);
+      // Add the new message to the messages array
+      setMessages((prevMessages) => [...prevMessages, messageData]);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.disconnect();
+      socket.off('receiveMessage');
+    };
+  }, []);
+
+  // Handle startup selection and message fetching
   const handleStartupClick = (startupId) => {
-    setSelectedStartup(startupId)
-    // Mark messages as read when the startup is selected
-    setUnreadMessages(prev => ({ ...prev, [startupId]: 0 }))
-  }
+    setSelectedStartup(startupId);
+    socket.emit('joinRoom', startupId);
+    
+    // Fetch messages for the selected startup
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(`/admin/messages/${startupId}`);
+        setMessages(response.data.messsages); // Ensure this matches the API response structure
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
 
+    fetchMessages();
+    setUnreadMessages((prev) => ({ ...prev, [startupId]: 0 }));
+  };
+
+  // Handle back button click
   const handleBackToStartups = () => {
-    setSelectedStartup(null)
-  }
+    setSelectedStartup(null);
+  };
 
+  // Handle sending a single message
   const handleSendMessage = () => {
-    if (inputMessage.trim() === '') return
+    if (inputMessage.trim() === '') return;
 
-    setMessages(prevMessages => ({
-      ...prevMessages,
-      [selectedStartup]: [
-        ...(prevMessages[selectedStartup] || []),
-        { id: Date.now(), text: inputMessage, sender: 'user' }
-      ]
-    }))
-    
+    // Send message through socket
+    socket.emit('sendMessage', {
+      roomId: selectedStartup, // Use roomId as your event structure
+      messageData: {
+        message: inputMessage,
+        sender: 'user',
+      },
+    });
+
     // Update unread messages count
-    setUnreadMessages(prev => ({
+    setUnreadMessages((prev) => ({
       ...prev,
-      [selectedStartup]: (prev[selectedStartup] || 0) + 1
-    }))
-    
-    setInputMessage('')
-  }
+      [selectedStartup]: (prev[selectedStartup] || 0) + 1,
+    }));
 
-  const handleBroadcastMessage = () => {
-    if (broadcastMessage.trim() === '') return
-
-    const newMessages = { ...messages }
-    startups.forEach(startup => {
-      newMessages[startup.id] = [
-        ...(newMessages[startup.id] || []),
-        { id: Date.now(), text: broadcastMessage, sender: 'user' }
-      ]
-      // Increment unread messages count for each startup
-      setUnreadMessages(prev => ({
-        ...prev,
-        [startup.id]: (prev[startup.id] || 0) + 1
-      }))
-    })
-    setMessages(newMessages)
-    setBroadcastMessage('')
-  }
+    setInputMessage('');
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -101,7 +99,7 @@ export default function StartupMessages() {
               <ArrowLeft className="h-6 w-6" />
             </button>
             <h2 className="text-xl font-bold">
-              {startups.find(s => s.id === selectedStartup)?.name}
+              {startups.find((s) => s._id === selectedStartup)?.kyc.company_name}
             </h2>
             {unreadMessages[selectedStartup] > 0 && (
               <span className="ml-2 bg-red-500 text-white px-2 rounded-full text-sm">
@@ -110,12 +108,10 @@ export default function StartupMessages() {
             )}
           </div>
           <div className="flex-1 p-4 overflow-y-auto">
-            {messages[selectedStartup]?.map(message => (
+            {messages.map((message, index) => (
               <div
-                key={message.id}
-                className={`mb-4 ${
-                  message.sender === 'user' ? 'text-right' : 'text-left'
-                }`}
+                key={index}
+                className={`mb-4 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}
               >
                 <span
                   className={`inline-block p-2 rounded-lg ${
@@ -124,7 +120,7 @@ export default function StartupMessages() {
                       : 'bg-gray-300'
                   }`}
                 >
-                  {message.text}
+                  {message.message} {/* Update to access message correctly */}
                 </span>
               </div>
             ))}
@@ -149,38 +145,21 @@ export default function StartupMessages() {
       ) : (
         // Startups list view
         <div className="flex flex-col h-full">
-          <div className="p-4 bg-white border-b">
-            <h2 className="text-xl font-bold mb-4">Broadcast Message</h2>
-            <textarea
-              value={broadcastMessage}
-              onChange={(e) => setBroadcastMessage(e.target.value)}
-              placeholder="Type a message to send to all startups..."
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-              rows={4}
-            />
-            <button
-              onClick={handleBroadcastMessage}
-              className="w-full bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              Send to All Startups
-            </button>
-          </div>
           <h1 className="text-2xl font-bold p-4 bg-white border-b">Startups</h1>
+
           <div className="flex-1 overflow-y-auto">
             <ul>
-              {startups.map(startup => (
-                <li
-                  key={startup.id}
-                  className="border-b last:border-b-0"
-                >
+              {startups.map((startup) => (
+                <li key={startup._id} className="border-b last:border-b-0">
                   <button
                     className="w-full p-4 text-left hover:bg-gray-100 flex justify-between items-center focus:outline-none focus:bg-gray-100"
-                    onClick={() => handleStartupClick(startup.id)}
+                    onClick={() => handleStartupClick(startup._id)}
                   >
-                    <span>{startup.name}</span>
-                    {unreadMessages[startup.id] > 0 && (
+                    <h2>{startup._id}</h2>
+                    <span>{startup.kyc.company_name}</span>
+                    {unreadMessages[startup._id] > 0 && (
                       <span className="bg-red-500 text-white px-2 rounded-full text-sm">
-                        {unreadMessages[startup.id]} Unread
+                        {unreadMessages[startup._id]} Unread
                       </span>
                     )}
                     <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -192,5 +171,5 @@ export default function StartupMessages() {
         </div>
       )}
     </div>
-  )
+  );
 }
