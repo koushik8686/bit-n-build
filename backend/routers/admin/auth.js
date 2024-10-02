@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Startup = require('.../models/startupmodel');
-const EIR = require('.../models/EirSchema'); // Update with your EIR model path
-const GrantScheme = require('.../models/GrandSchemeSchema');
+const Startup = require('../../models/startupmodel');
+const EIR = require('../../models/EirSchema'); // Update with your EIR model path
+const GrantScheme = require('../../models/GrandSchemeSchema');
 
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -81,4 +81,3 @@ router.get('/grant-request', async (req, res) => {
 
 
 module.exports = router
-auth.js

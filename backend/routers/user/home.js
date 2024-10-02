@@ -15,14 +15,12 @@ router.get("/home/:user/:startup", async function (req, res) {
 
     // Find startup
     const startup = await StartupModel.findById(req.params.startup);
-    console.log(startup);
     if (!startup) {
       return res.status(404).json({ message: 'Startup not found' });
     }
 
     // Search in EIR collection
     const eirRecords = await EIR.find({ startup_id: req.params.startup });
-    console.log(eirRecords);
     // Search in GrantScheme collection
     const grantRecords = await GrantScheme.find({ "startup_id": req.params.startup });
 

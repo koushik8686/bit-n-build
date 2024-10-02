@@ -5,25 +5,24 @@ import {
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import image from '../../assets/icon.jpg';
+import Cookie from 'js-cookie'
+import axios from 'axios';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Assuming login logic is handled here, such as with an API request
-      const user = { email, password }; // Replace with actual API call
-      // Example success condition:
-      if (user) {
-        Cookies.set('user', user.email); // Set user data in cookies
-        navigate('/home'); // Redirect after successful login
+      const { data } = await axios.post('/auth/login', { email, password });
+      if (data.message === 'Login successful') {
+        Cookie.set('user' , data.userId)
+        Cookie.set('startup', data.startup)
+        navigate('/home')
       }
     } catch (error) {
-      console.error('Login error:', error);
-      alert('Login failed');
+      alert('Error: ' + error.response.data.error);
     }
   };
 

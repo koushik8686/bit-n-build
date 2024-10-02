@@ -69,11 +69,11 @@ router.post('/kyc', async (req, res) => {
   });
 // Login route
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Find user by username
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'User not found' });
 
     // Compare the password

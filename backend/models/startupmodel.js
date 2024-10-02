@@ -41,7 +41,7 @@ const ReportSchema = new Schema({
 const MessageSchema = new Schema({
   message: { type: String, required: true },
   date_sent: { type: Date, default: Date.now },
-  recipients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Startup' }]
+  recipient: { type: String}
 });
 
 // EIR & Grant Scheme Management Schema

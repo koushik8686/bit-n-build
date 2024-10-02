@@ -6,7 +6,6 @@ const Startup = require('../../models/startupmodel')
 router.post("/eir/:startup", async function (req, res) {
     const { entrepreneur, startup_name, objectives } = req.body; // Extract data from request body
     const startup_id = req.params.startup; // Get startup ID from URL
-    console.log(req.body);
     const newEirDetail = new eirmodel({
         startup_id,
         entrepreneur,
