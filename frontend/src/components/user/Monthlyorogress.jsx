@@ -12,7 +12,7 @@ const MonthlyProgressReport = ({progress}) => {
   const startup = Cookie.get('startup')
   const handleSubmit = async(e) => {
     e.preventDefault();
-   const response = await axios.post(`/submit/reports/${startup}` , {monthlyData , milestones , issues , financials} )
+   const response = await axios.post(`/submit/reports/${startup}` , {month , milestones , issues , financials} )
    console.log(response);
 
    // Add new report to the monthlyData array

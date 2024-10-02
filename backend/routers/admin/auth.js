@@ -44,7 +44,6 @@ router.post('/login', async (req, res) => {
     }
   });
 
-
 // GET request to fetch EIR details
 //   router.get('/eir', async (req, res) => {
 //   try {

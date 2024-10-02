@@ -5,6 +5,7 @@ import Home from './components/user/Home';
 import AdminLogin from './components/admin/Login';
 import Admin from './components/admin/Admin';
 import Login from './components/user/Login';
+import Progress from './components/admin/Progress'
 //helo
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path='/home' element={<Home />} />
         <Route path='/admin/login' element={<AdminLogin/>} />
         <Route path='/admin' element={<Admin />} />
+        <Route path='/progress/:startup' element={<Progress/>} />
        </Routes>
       </BrowserRouter>
     </div>

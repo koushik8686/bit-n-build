@@ -8,6 +8,7 @@ const port = 4000;
 const cors = require('cors');
 const dotenv = require('dotenv');
 const messageModel = require('./models/adminmessages')
+const startupModel = require("./models/startupmodel")
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use("/auth", require("./routers/user/auth"));
 app.use("/admin", require("./routers/admin/auth"));
 app.use("/user", require("./routers/user/home"));
 app.use("/submit", require("./routers/user/forms"));
+app.use("/get" , require("./routers/admin/Data"))
 
 // Simple route for testing
 app.get('/', (req, res) => {
@@ -88,43 +90,55 @@ io.on('connection', (socket) => {
             console.error("Error saving message to database:", error);
         }
     });
-    socket.on('BroadcastMessage', async ({ roomId, messageData }) => {
-        console.log("Message received from user in room:", roomId, messageData);
+    socket.on('BroadcastMessage', async ({ messageData }) => {
+        console.log("Broadcasting message:", messageData);
         try {
+            // Emit the broadcast message to all connected clients
             io.emit('receiveMessage', messageData);
-            console.log(`Message sent to room ${roomId}:`, messageData);
+            console.log("Broadcast message sent to all clients:", messageData);
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('Error broadcasting message:', error);
         }
-                try {
-            // Find or create the message document for the specific startup
-            const existingMessages = await messageModel.findOne({ startup_id: roomId });
-            if (existingMessages) {
-               console.log(existingMessages.startup_id );
-                // If messages already exist, push the new message to the messages array
-                existingMessages.messsages[existingMessages.messsages.length]={
-                    message: messageData.message,
-                    sender: messageData.sender,
-                    created_at: new Date(),
-                };
-                await existingMessages.save(); // Save the updated document
+    
+        try {
+            // Fetch all startups from the database (assuming you have a Startup model)
+            const allStartups = await startupModel.find();  // Adjust this to match your database query
+            if (allStartups && allStartups.length > 0) {
+                for (let startup of allStartups) {
+                    const roomId = startup._id;  // Assuming _id is the unique identifier for the startup
+                    // Find or create the message document for each startup
+                    const existingMessages = await messageModel.findOne({ startup_id: roomId });
+                    if (existingMessages) {
+                        // If messages already exist, push the new message to the messages array
+                        existingMessages.messsages.push({
+                            message: messageData.message,
+                            sender: messageData.sender,
+                            created_at: new Date(),
+                        });
+                        await existingMessages.save();  // Save the updated document
+                    } else {
+                        // If no messages exist, create a new document
+                        const newMessage = new messageModel({
+                            startup_id: roomId,
+                            messages: [{
+                                message: messageData.message,
+                                sender: messageData.sender,
+                                created_at: new Date(),
+                            }],
+                        });
+                        await newMessage.save();  // Save the new document
+                    }
+    
+                    console.log(`Message saved to database for startup ${roomId}.`);
+                }
             } else {
-                // If no messages exist, create a new document
-                const newMessage = new messageModel({
-                    startup_id: roomId,
-                    messages: [{
-                        message: messageData.message,
-                        sender: messageData.sender,
-                        created_at: new Date(),
-                    }],
-                });
-                await newMessage.save(); // Save the new document
+                console.log("No startups found.");
             }
-            console.log("Message saved to database.");
         } catch (error) {
-            console.error("Error saving message to database:", error);
+            console.error("Error saving broadcast message to database:", error);
         }
     });
+    
 
     // Handle user disconnect
     socket.on('disconnect', () => {

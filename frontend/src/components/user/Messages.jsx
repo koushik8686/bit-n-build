@@ -23,9 +23,10 @@ export default function ImprovedChat({ initialMessages = [] }) {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(`/admin/messages/${startup}`);
-        setMessages(response.data.messsages); 
+        setMessages(response.data.messsages || []);  // Ensure messages is an array
       } catch (error) {
         console.error('Error fetching messages:', error);
+        setMessages([]);  // Set messages to an empty array in case of error
       }
     };
 

@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const eirmodel = require('../../models/EirSchema')
 const grantmodel = require("../../models/GrandSchemeSchema")
-const Startup = require('../../models/startupmodel')
+const Startup = require('../../models/startupmodel');
+const { log } = require('node:console');
 router.post("/eir/:startup", async function (req, res) {
     const { entrepreneur, startup_name, objectives } = req.body; // Extract data from request body
     const startup_id = req.params.startup; // Get startup ID from URL
@@ -57,6 +58,7 @@ router.post("/funds/:startup", async function (req, res) {
 router.post("/reports/:startup" ,async function(req, res) {
         const { startup } = req.params;
         const { month, milestones, issues, financials } = req.body;
+        console.log(req.body);
         try {
           const editstartup = await Startup.findById(startup);
           if (!editstartup) {

@@ -82,6 +82,21 @@ export default function StartupMessages() {
 
     setInputMessage('');
   };
+  const BroadcastMessage = () => {
+    if (inputMessage.trim() === '') return;
+    console.log("broadcasting message" , inputMessage);
+    const newMessage = {
+      message: inputMessage,
+      sender: 'admin',
+    };
+    // Send message through socket
+    socket.emit('BroadcastMessage', {
+      roomId: selectedStartup, // Use roomId as your event structure
+      messageData: newMessage,  // Send the constructed message
+    });
+    // Add the new message to the messages array locally
+    setInputMessage('');
+  };
   
 
   return (
@@ -99,11 +114,7 @@ export default function StartupMessages() {
             <h2 className="text-xl font-bold">
               {startups.find((s) => s._id === selectedStartup)?.kyc.company_name}
             </h2>
-            {unreadMessages[selectedStartup] > 0 && (
-              <span className="ml-2 bg-red-500 text-white px-2 rounded-full text-sm">
-                {unreadMessages[selectedStartup]} Unread
-              </span>
-            )}
+            
           </div>
           <div className="flex-1 p-4 overflow-y-auto">
             { messages&& messages.map((message, index) => (
@@ -144,8 +155,8 @@ export default function StartupMessages() {
         // Startups list view
         <div className="flex flex-col h-full">
           <h1 className="text-2xl font-bold p-4 bg-white border-b">Startups</h1>
-          <input type='text' />
-          <button>Send to all</button>
+          <input onChange={(e)=>setInputMessage(e.target.value)} type='text' />
+          <button onClick={BroadcastMessage}>Send to all</button>
           <div className="flex-1 overflow-y-auto">
             <ul>
               {startups.map((startup) => (
@@ -156,11 +167,6 @@ export default function StartupMessages() {
                   >
                     <h2>{startup._id}</h2>
                     <span>{startup.kyc.company_name}</span>
-                    {unreadMessages[startup._id] > 0 && (
-                      <span className="bg-red-500 text-white px-2 rounded-full text-sm">
-                        {unreadMessages[startup._id]} Unread
-                      </span>
-                    )}
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </button>
                 </li>

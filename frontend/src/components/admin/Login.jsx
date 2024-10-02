@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ const AdminLogin = () => {
             const response = await axios.post('/admin/login', { username, password });
             console.log(response);
             if (response.data.message === "Login successful") {
-                Cookies.set('admin', "!2345");
+                Cookies.set('admin', "admin");
                 navigate("/admin");
             } else {
                 alert('Login failed: ' + response.data.message); // Added error handling
@@ -26,7 +26,12 @@ const AdminLogin = () => {
             alert('Login failed: ' + error.response?.data?.message || 'Unknown error occurred'); // Inform user of error
         }
     };
-
+    useEffect(() => {
+      const admin = Cookies.get("admin");
+      if(admin ) {
+        navigate("/admin");
+      }
+    }, [])
     return (
         <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
             {/* Left side - Login Form */}
