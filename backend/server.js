@@ -13,7 +13,7 @@ const startupModel = require("./models/startupmodel")
 dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.URL||"mongodb://127.0.0.1:27017/hakathin", { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 const io = new Server(server, {

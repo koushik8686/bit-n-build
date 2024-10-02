@@ -157,7 +157,7 @@ export default function Admin() {
 
         {selectedTab === 'eirrequests' && <EIRRequests eirRequests={eirRequests} />}
 
-        {selectedTab === 'grantrequests' && <GrantApplicationComponent grantSchemes={grantRequests} />}
+        {selectedTab === 'budgetrequests' && <GrantApplicationComponent grantSchemes={grantRequests} />}
 
         {selectedTab === 'messages' && <StartupMessages />}
       </div>

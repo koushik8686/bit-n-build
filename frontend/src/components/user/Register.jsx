@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
 import { 
   Container, TextField, Button, Typography, Box, Grid, Paper, Divider 
 } from '@mui/material';
-import Cookies from 'js-cookie';
-import { Link, useNavigate } from 'react-router-dom';
-import image1 from '../../assets/registerwide.jpg';
-import image2 from '../../assets/wideskyscape.jpg';
-import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import Cookies from 'js-cookie'
+import {  Link, useNavigate } from 'react-router-dom';
+
 const AuthPage = () => {
-  const [isRegister, setIsRegister] = useState(true);
-  const [showKYCForm, setShowKYCForm] = useState(false);
+  const [isRegister, setIsRegister] = useState(true); // Switch between Login/Register
+  const [showKYCForm, setShowKYCForm] = useState(false); // Show KYC form after registration
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -24,177 +22,187 @@ const AuthPage = () => {
     incorporation_date: '',
     industry: '',
     website: '',
-    user: ''
+    user:''
   });
-  const navigate = useNavigate();
-
-  // Animations for form transitions
-  const pageVariants = {
-    hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.5 } },
-    exit: { opacity: 0, x: 50, transition: { duration: 0.3 } }
+  const navigate = useNavigate()
+  const logout = async () => {
+    Cookies.remove('user');
+    navigate("/")
   };
-
-  const imageVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
-  };
-
+  
+  // Handle user registration or login
   const handleSubmit = async (e) => {
     e.preventDefault();
     const url = !showKYCForm ? 'http://localhost:4000/auth/register' : 'http://localhost:4000/auth/kyc';
     try {
-      const { data } = await axios.post(url, { username, password, email });
+      const { data } = await axios.post(`/auth/register`, { username, password , email });
       alert(data.message);
       console.log(data);
-      if (data.message === "Registration successful!") {
-        Cookies.set('user', data.userId);
-        setKycDetails({ ...kycDetails, user: data.userId });
+      if (data.message==="Registration successful!") {
+        Cookies.set('user', data.userId); // Store user details in cookies
+        setKycDetails({ ...kycDetails, user : data.userId })
       }
     } catch (error) {
-      alert('Error: ' + error.response?.data?.error || 'Unknown error');
+      alert('Error: ' + error.response.data.error);
     }
-    setShowKYCForm(!showKYCForm);
+    setShowKYCForm(!showKYCForm); //
+    return
   };
 
+  // Handle Google Login
+  const handleGoogleLogin = (credentialResponse) => {
+    const token = credentialResponse.credential;
+    axios.post('/api/google-login', { token })
+      .then(res => alert('Google login successful'))
+      .catch(err => alert('Google login failed: ' + err.message));
+  };
+
+  // Handle KYC form submission
   const handleKYCSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('http://localhost:4000/auth/kyc', kycDetails);
+      const { data } = await axios.post('http://localhost:4000/auth/kyc', kycDetails); // Send KYC details to server
       console.log(data);
       alert('KYC submitted successfully');
       Cookies.set('startup', data.startup);
-      navigate("/home");
+      navigate("/home")
     } catch (error) {
-      alert('Error: ' + error.response?.data?.error || 'Unknown error');
     }
   };
-  const user = Cookies.get('user');
-  const startup = Cookies.get('startup');
-
-  useEffect(() => {
-    if (user && startup) {
-      return navigate('/home');
-    }
-})
 
   return (
-    <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight:'100vh' }}>
-      <Grid container spacing={2}>
-        {/* Form Section */}
-        <Grid item xs={12} md={6}>
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={pageVariants}
-          >
-            <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: '400px', flex: 1 }}>
-              {!showKYCForm ? (
-                <>
-                  <Typography variant="h4" component="h1" gutterBottom align="center">
-                    {isRegister ? 'Register' : 'Login'}
-                  </Typography>
-                  <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                    {/* Username Field */}
-                    <TextField
-                      id="username"
-                      label="Username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      fullWidth
-                      required
-                      margin="normal"
-                    />
-                    {/* Email Field */}
-                    <TextField
-                      id="email"
-                      label="Email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      fullWidth
-                      required
-                      margin="normal"
-                    />
-                    {/* Password Field */}
-                    <TextField
-                      id="password"
-                      label="Password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      fullWidth
-                      required
-                      margin="normal"
-                    />
-                    <Button 
-                      type="submit" 
-                      variant="contained" 
-                      color="primary" 
-                      fullWidth 
-                      sx={{ mt: 2.7, mb: 2 }}>
-                      {isRegister ? 'Register' : 'Login'}
-                    </Button>
-                  </Box>
-                  <Divider sx={{ mb: 3 }}>OR</Divider>
-                  <Typography align="center">
-                    Already have an account? <Link to="/login" style={{ color: '#6200ea' }}>Login</Link>
-                  </Typography>
-                </>
-              ) : (
-                <>
-                  <Typography variant="h4" component="h1" gutterBottom align="center">
-                    Complete KYC
-                  </Typography>
-                  <Box component="form" onSubmit={handleKYCSubmit}>
-                    <TextField
-                      id="company_name"
-                      label="Company Name"
-                      value={kycDetails.company_name}
-                      onChange={(e) => setKycDetails({ ...kycDetails, company_name: e.target.value })}
-                      fullWidth
-                      required
-                      margin="normal"
-                    />
-                    <TextField
-                      id="address"
-                      label="Address"
-                      value={kycDetails.address}
-                      onChange={(e) => setKycDetails({ ...kycDetails, address: e.target.value })}
-                      fullWidth
-                      required
-                      margin="normal"
-                    />
-                    {/* Additional Fields for KYC */}
-                    <Button 
-                      type="submit" 
-                      variant="contained" 
-                      color="primary" 
-                      fullWidth 
-                      sx={{ mt: 3.5, mb: 3.5 }}>
-                      Submit KYC
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </Paper>
-          </motion.div>
-        </Grid>
+    <Container maxWidth="sm" sx={{ mt: 5 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        {/* Show either Registration/Login form or KYC form based on the state */}
+        {!showKYCForm ? (
+          <>
+            <Typography variant="h4" component="h1" gutterBottom align="center">
+              {isRegister ? 'Register' : 'Login'}
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                label="Username"
+                fullWidth
+                margin="normal"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+              <TextField
+                label="Password"
+                fullWidth
+                margin="normal"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <TextField
+                label="email"
+                fullWidth
+                margin="normal"
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            
+              <Button 
+                type="submit" 
+                variant="contained" 
+                color="primary" 
+                fullWidth 
+                sx={{ mt: 2, mb: 2 }}>
+                {isRegister ? 'Register' : 'Login'}
+              </Button>
+            </Box>
 
-        {/* Image Section with animation */}
-        <Grid item xs={12} md={6}>
-          <motion.img
-            src={showKYCForm ? image2 : image1}
-            alt="Background"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={imageVariants}
-          />
-        </Grid>
-      </Grid>
+            <Divider sx={{ mb: 2 }}>OR</Divider>
+
+            <Link to={'/login'}>Login</Link>
+            
+          </>
+        ) : (
+          <>
+            <Typography variant="h4" component="h1" gutterBottom align="center">
+              Complete KYC
+            </Typography>
+            <Box component="form" onSubmit={handleKYCSubmit}>
+              <TextField
+                label="Company Name"
+                fullWidth
+                margin="normal"
+                value={kycDetails.company_name}
+                onChange={(e) => setKycDetails({ ...kycDetails, company_name: e.target.value })}
+                required
+              />
+              <TextField
+                label="Address"
+                fullWidth
+                margin="normal"
+                value={kycDetails.address}
+                onChange={(e) => setKycDetails({ ...kycDetails, address: e.target.value })}
+                required
+              />
+              <TextField
+                label="Contact Person Name"
+                fullWidth
+                margin="normal"
+                value={kycDetails.contact_person_name}
+                onChange={(e) => setKycDetails({ ...kycDetails, contact_person_name: e.target.value })}
+                required
+              />
+              <TextField
+                label="Contact Person Email"
+                fullWidth
+                margin="normal"
+                value={kycDetails.contact_person_email}
+                onChange={(e) => setKycDetails({ ...kycDetails, contact_person_email: e.target.value })}
+                required
+              />
+              <TextField
+                label="Contact Person Phone"
+                fullWidth
+                margin="normal"
+                value={kycDetails.contact_person_phone}
+                onChange={(e) => setKycDetails({ ...kycDetails, contact_person_phone: e.target.value })}
+                required
+              />
+              <TextField
+                label="Incorporation Date"
+                fullWidth
+                margin="normal"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={kycDetails.incorporation_date}
+                onChange={(e) => setKycDetails({ ...kycDetails, incorporation_date: e.target.value })}
+              />
+              <TextField
+                label="Industry"
+                fullWidth
+                margin="normal"
+                value={kycDetails.industry}
+                onChange={(e) => setKycDetails({ ...kycDetails, industry: e.target.value })}
+              />
+              <TextField
+                label="Website"
+                fullWidth
+                margin="normal"
+                value={kycDetails.website}
+                onChange={(e) => setKycDetails({ ...kycDetails, website: e.target.value })}
+              />
+              <Button 
+                type="submit" 
+                variant="contained" 
+                color="primary" 
+                fullWidth 
+                sx={{ mt: 2 }}>
+                Submit KYC
+              </Button>
+            </Box>
+          </>
+        )}
+      </Paper>
     </Container>
   );
 };
