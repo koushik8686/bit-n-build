@@ -1,43 +1,43 @@
-import React, { useState } from 'react';
-import './eirapplication.css';
-import axios from 'axios';
-import Cookie from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
+"use client"
 
-export default function EIRDetails({ eirList }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
-  const startup = Cookie.get('startup');
+import React, { useState } from 'react'
+import axios from 'axios'
+import Cookie from 'js-cookie'
+import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 
-  // Individual states for each form field
-  const [startup_id] = useState(startup || '');
-  const [entrepreneurName, setEntrepreneurName] = useState('');
-  const [entrepreneurBackground, setEntrepreneurBackground] = useState('');
-  const [entrepreneurIndustryExperience, setEntrepreneurIndustryExperience] = useState('');
-  const [previousVentures, setPreviousVentures] = useState(['']);
-  const [startupName, setStartupName] = useState('');
-  const [mentorshipStartups, setMentorshipStartups] = useState(['']);
-  const [personalGoals, setPersonalGoals] = useState('');
+export default function Component({ eirList }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const navigate = useNavigate()
+  const startup = Cookie.get('startup')
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const [startup_id] = useState(startup || '')
+  const [entrepreneurName, setEntrepreneurName] = useState('')
+  const [entrepreneurBackground, setEntrepreneurBackground] = useState('')
+  const [entrepreneurIndustryExperience, setEntrepreneurIndustryExperience] = useState('')
+  const [previousVentures, setPreviousVentures] = useState([''])
+  const [startupName, setStartupName] = useState('')
+  const [mentorshipStartups, setMentorshipStartups] = useState([''])
+  const [personalGoals, setPersonalGoals] = useState('')
+
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => setIsModalOpen(false)
 
   const handlePreviousVenturesChange = (index, value) => {
-    const updatedVentures = [...previousVentures];
-    updatedVentures[index] = value;
-    setPreviousVentures(updatedVentures);
-  };
+    const updatedVentures = [...previousVentures]
+    updatedVentures[index] = value
+    setPreviousVentures(updatedVentures)
+  }
 
   const handleMentorshipStartupsChange = (index, value) => {
-    const updatedMentorshipStartups = [...mentorshipStartups];
-    updatedMentorshipStartups[index] = value;
-    setMentorshipStartups(updatedMentorshipStartups);
-  };
+    const updatedMentorshipStartups = [...mentorshipStartups]
+    updatedMentorshipStartups[index] = value
+    setMentorshipStartups(updatedMentorshipStartups)
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    // Create the structured formData
     const formData = {
       startup_id,
       entrepreneur: {
@@ -51,208 +51,220 @@ export default function EIRDetails({ eirList }) {
         mentorship_startups: mentorshipStartups,
         personal_goals: personalGoals,
       },
-    };
+    }
 
     try {
-      const response = await axios.post(`/submit/eir/${startup}`, formData);
-      console.log('Form Data Submitted:', formData);
-      closeModal();
+      const response = await axios.post(`/submit/eir/${startup}`, formData)
+      console.log('Form Data Submitted:', formData)
+      closeModal()
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('An error occurred while submitting the form. Please try again.');
+      console.error('Error submitting form:', error)
+      alert('An error occurred while submitting the form. Please try again.')
     }
-  };
+  }
+
   const getStatusClass = (status) => {
     switch (status) {
       case 'Applied':
-        return 'text-yellow-500 font-bold'; // Highlight with yellow
+        return 'text-yellow-600 font-bold'
       case 'Approved':
-        return 'text-green-500 font-bold'; // Highlight with green
+        return 'text-green-600 font-bold'
       case 'Rejected':
-        return 'text-red-500 font-bold'; // Highlight with red
+        return 'text-red-600 font-bold'
       case 'In Progress':
-        return 'text-blue-500 font-bold'; // Highlight with blue
+        return 'text-blue-600 font-bold'
       case 'Completed':
-        return 'text-purple-500 font-bold'; // Highlight with purple
+        return 'text-purple-600 font-bold'
       default:
-        return 'text-gray-500';
+        return 'text-gray-600'
     }
-  };
+  }
+
   return (
-    <>
-      <div className="apply-button-container">
-        <button
-          className="apply-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={openModal}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="bg-gradient-to-b from-gray-200 to-gray-300 min-h-screen p-6"
+    >
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="text-center mb-8"
         >
-          Apply for EIR
-        </button>
-      </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-[#00ADB5] hover:bg-[#00A1A1] text-white font-bold py-2 px-4 rounded transition duration-300"
+            onClick={openModal}
+          >
+            Apply for EIR
+          </motion.button>
+        </motion.div>
 
-      <div className="eir-container bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">EIR Application</h2>
-        {eirList.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {eirList.map((eir, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="bg-gradient-to-b from-gray-200 to-gray-300 p-6 rounded-lg shadow-md"
+        >
+          <h2 className="text-3xl font-bold text-black mb-6">EIR Applications</h2>
+          {eirList.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              <h3 className="text-lg font-semibold mb-2">EIR Application #{index + 1}</h3>
-              <p><strong>Startup Name:</strong> {eir.startup_name}</p>
-              <h4 className="text-md font-semibold mt-4">Entrepreneur Information</h4>
-              <p><strong>Name:</strong> {eir.entrepreneur.name}</p>
-              <p><strong>Background:</strong> {eir.entrepreneur.background}</p>
-              <p><strong>Industry Experience:</strong> {eir.entrepreneur.industry_experience || 'No industry experience.'}</p>
-              <h4 className="text-md font-semibold mt-4">Previous Ventures</h4>
-              {eir.entrepreneur.previous_ventures.length > 0 ? (
-                <ul className="list-disc list-inside">
-                  {eir.entrepreneur.previous_ventures.map((venture, index) => (
-                    <li key={index}>{venture}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No previous ventures.</p>
-              )}
+              {eirList.map((eir, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.5 }}
+                  whileHover={{ scale: 1.03 }}
+                  className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                >
+                  <h3 className="text-lg font-semibold text-[#00ADB5] mb-2">Application #{index + 1}</h3>
+                  <p className="text-gray-700">
+                    <strong>Startup Name:</strong> {eir.startup_name}
+                  </p>
+                  <p className="text-gray-700">
+                    <strong>Entrepreneur:</strong> {eir.entrepreneur.name}
+                  </p>
+                  <p className={`mt-2 ${getStatusClass(eir.status.status)}`}>
+                    <strong>Status:</strong> {eir.status.status}
+                  </p>
+                  <p className="text-gray-700 mt-2">
+                    <strong>Personal Goals:</strong> {eir.objectives.personal_goals || 'No goals provided.'}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <p className="text-gray-700">No EIR applications available.</p>
+          )}
+        </motion.div>
 
-              {/* Objectives */}
-              <h4 className="text-md font-semibold mt-4">Objectives</h4>
-              <p><strong>Personal Goals:</strong> {eir.objectives.personal_goals || 'No goals provided.'}</p>
+        <AnimatePresence>
+          {isModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              >
+                <h2 className="text-2xl font-bold text-[#00ADB5] mb-4">EIR Application Form</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                <h3 className="font-bold text-lg text-[#00ADB5]">Entrepreneur Information</h3>
+                <div>
+                  <label className="block text-gray-700 mb-1">Name</label>
+                  <input
+                    type="text"
+                    value={entrepreneurName}
+                    onChange={(e) => setEntrepreneurName(e.target.value)}
+                    className="border border-gray-300 p-2 w-full rounded"
+                    required
+                  />
+                </div>
 
-              {/* Mentorship Startups */}
-              <h4 className="text-md font-semibold mt-4">Mentorship Startups</h4>
-              {eir.objectives.mentorship_startups.length > 0 ? (
-                <ul className="list-disc list-inside">
-                  {eir.objectives.mentorship_startups.map((startup, index) => (
-                    <li key={index}>{startup}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No mentorship startups.</p>
-              )}
-              {/* Status */}
-              <p className={`mt-4 ${getStatusClass(eir.status.status)}`}>
-                <strong>Status:</strong> {eir.status.status}
-              </p>
+                <div>
+                  <label className="block text-gray-700 mb-1">Background</label>
+                  <textarea
+                    value={entrepreneurBackground}
+                    onChange={(e) => setEntrepreneurBackground(e.target.value)}
+                    className="border border-gray-300 p-2 w-full rounded"
+                    required
+                  />
+                </div>
 
-              {/* Interview Date if exists */}
-              {eir.interview_date && (
-                <p><strong>Interview Date:</strong> {new Date(eir.interview_date).toDateString()}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>No EIR applications available.</p>
-      )}
-        {isModalOpen && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h2 className="text-xl font-bold mb-4">EIR Application Form</h2>
-              <div className="form-scroll">
-                <form onSubmit={handleSubmit}>
-                  <h3 className="font-bold mb-2">Entrepreneur Information</h3>
+                <div>
+                  <label className="block text-gray-700 mb-1">Industry Experience</label>
+                  <input
+                    type="text"
+                    value={entrepreneurIndustryExperience}
+                    onChange={(e) => setEntrepreneurIndustryExperience(e.target.value)}
+                    className="border border-gray-300 p-2 w-full rounded"
+                  />
+                </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Name</label>
+                <div>
+                  <label className="block text-gray-700 mb-1">Previous Ventures</label>
                     <input
                       type="text"
-                      value={entrepreneurName}
-                      onChange={(e) => setEntrepreneurName(e.target.value)}
-                      className="border border-gray-300 p-2 w-full rounded"
-                      required
+                      value={previousVentures}
+                      onChange={(e) => setPreviousVentures( e.target.value)}
+                      className="border border-gray-300 p-2 w-full rounded mb-2"
                     />
-                  </div>
+                </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Background</label>
-                    <textarea
-                      value={entrepreneurBackground}
-                      onChange={(e) => setEntrepreneurBackground(e.target.value)}
-                      className="border border-gray-300 p-2 w-full rounded"
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-gray-700 mb-1">Startup Name</label>
+                  <input
+                    type="text"
+                    value={startupName}
+                    onChange={(e) => setStartupName(e.target.value)}
+                    className="border border-gray-300 p-2 w-full rounded"
+                    required
+                  />
+                </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Industry Experience</label>
+                <h3 className="font-bold text-lg text-[#00ADB5] mt-6">Objectives</h3>
+
+                <div>
+                  <label className="block text-gray-700 mb-1">Mentorship Startups</label>
                     <input
                       type="text"
-                      value={entrepreneurIndustryExperience}
-                      onChange={(e) => setEntrepreneurIndustryExperience(e.target.value)}
-                      className="border border-gray-300 p-2 w-full rounded"
+                      value={mentorshipStartups}
+                      onChange={(e) => setMentorshipStartups( e.target.value)}
+                      className="border border-gray-300 p-2 w-full rounded mb-2"
                     />
-                  </div>
+                </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Previous Ventures</label>
-                    {previousVentures.map((venture, index) => (
-                      <input
-                        key={index}
-                        type="text"
-                        value={venture}
-                        onChange={(e) => handlePreviousVenturesChange(index, e.target.value)}
-                        className="border border-gray-300 p-2 w-full rounded"
-                      />
-                    ))}
-                  </div>
+                <div>
+                  <label className="block text-gray-700 mb-1">Personal Goals</label>
+                  <textarea
+                    value={personalGoals}
+                    onChange={(e) => setPersonalGoals(e.target.value)}
+                    className="border border-gray-300 p-2 w-full rounded"
+                  />
+                </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Startup Name</label>
-                    <input
-                      type="text"
-                      value={startupName}
-                      onChange={(e) => setStartupName(e.target.value)}
-                      className="border border-gray-300 p-2 w-full rounded"
-                      required
-                    />
-                  </div>
-
-                  <h3 className="font-bold mb-2">Objectives</h3>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Mentorship Startups</label>
-                    {mentorshipStartups.map((startup, index) => (
-                      <input
-                        key={index}
-                        type="text"
-                        value={startup}
-                        onChange={(e) => handleMentorshipStartupsChange(index, e.target.value)}
-                        className="border border-gray-300 p-2 w-full rounded"
-                      />
-                    ))}
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Personal Goals</label>
-                    <textarea
-                      value={personalGoals}
-                      onChange={(e) => setPersonalGoals(e.target.value)}
-                      className="border border-gray-300 p-2 w-full rounded"
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
+                  <div className="flex justify-end space-x-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       type="button"
-                      className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2"
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition duration-300"
                       onClick={closeModal}
                     >
                       Cancel
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       type="submit"
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      className="bg-[#00ADB5] hover:bg-[#00A1A1] text-white font-bold py-2 px-4 rounded transition duration-300"
                     >
                       Submit
-                    </button>
+                    </motion.button>
                   </div>
                 </form>
-              </div>
-            </div>
-          </div>
-        )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </>
-  );
+    </motion.div>
+  )
 }

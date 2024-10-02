@@ -68,11 +68,12 @@ router.post("/reports/:startup" ,async function(req, res) {
           const newProgress = {
             month,
             milestones,
-            issues,
+            issues_faced: issues, // Ensure this is the expected field
             financials,
           };
           // Push the new progress entry into the progress array
           editstartup.progress.push(newProgress);
+          console.log(editstartup);
           // Save the updated startup document
           await editstartup.save();
           return res.status(200).json({ message: 'Progress updated successfully', startup });

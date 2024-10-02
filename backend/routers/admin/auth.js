@@ -3,6 +3,7 @@ const router = express.Router();
 const Startup = require('../../models/startupmodel');
 const EIR = require('../../models/EirSchema'); // Update with your EIR model path
 const GrantScheme = require('../../models/GrandSchemeSchema');
+const Messages = require('../../models/adminmessages')
 
 // User login
 router.post('/login', async (req, res) => {
@@ -49,11 +50,36 @@ router.get('/grant-requests', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch grant requests' });
   }
 });
+router.post('/grant/progress', async (req, res) => {
+  const { grantId, status } = req.body;
+
+  try {
+    // Find the grant request by ID and update its status to "In Progress"
+    const updatedGrant = await GrantScheme.findByIdAndUpdate(
+      grantId,
+      {
+        $set: {
+          'grant_status.status': status, // Set status to "In Progress"
+          'grant_status.decision_date': new Date(), // Set the decision date
+        }
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedGrant) {
+      return res.status(404).json({ error: 'Grant request not found' });
+    }
+    console.log('Progress request called');
+    res.status(200).json({ message: 'Grant request marked as In Progress', updatedGrant });
+  } catch (error) {
+    console.error('Error marking grant request as In Progress:', error);
+    res.status(500).json({ error: 'Failed to mark grant request as In Progress' });
+  }
+});
 
 // Handle Reject Request
 router.post('/grant/reject', async (req, res) => {
   const { grantId, status } = req.body;
-
   try {
     // Find the grant request by ID and update its status
     const updatedGrant = await GrantScheme.findByIdAndUpdate(

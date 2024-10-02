@@ -1,175 +1,207 @@
 import { useEffect, useState } from 'react';
-import EIRRequests from './EirRequests';
-import GrantApplicationComponent from './GrantRequests';
-import StartupMessages from './Messages';
 
-export default function Admin() {
-  const [selectedTab, setSelectedTab] = useState('startups');
-  const [startups, setStartups] = useState([]);
-  const [eirRequests, setEirRequests] = useState([]);
-  const [grantRequests, setGrantRequests] = useState([]);
-  const [visibleDetails, setVisibleDetails] = useState(null);
+export default function GrantApplicationComponent({ grantSchemes }) {
+  const [openApplicant, setOpenApplicant] = useState(null);
+  const [openProject, setOpenProject] = useState(null);
+  const [updatedSchemes, setUpdatedSchemes] = useState(grantSchemes);
 
-  // Fetch startup data when the component mounts
-  useEffect(() => {
-    fetch('admin/startups')
-      .then((response) => response.json())
-      .then((data) => setStartups(data))
-      .catch((error) => console.error('Error fetching startups:', error));
-  }, []);
-
-  // Fetch EIR requests data
-  useEffect(() => {
-    fetch('admin/eir-requests')
-      .then((response) => response.json())
-      .then((data) => setEirRequests(data))
-      .catch((error) => console.error('Error fetching EIR requests:', error));
-  }, []);
-
-  // Fetch Grant requests data
-  useEffect(() => {
-    fetch('admin/grant-requests')
-      .then((response) => response.json())
-      .then((data) => setGrantRequests(data))
-      .catch((error) => console.error('Error fetching grant requests:', error));
-  }, []);
-
-  // Toggle the visibility of startup details
-  const toggleDetails = (startupId) => {
-    setVisibleDetails((prevId) => (prevId === startupId ? null : startupId));
+  const toggleProjectDropdown = (id) => {
+    setOpenProject(openProject === id ? null : id);
   };
 
+  const toggleApplicantDropdown = (id) => {
+    setOpenApplicant(openApplicant === id ? null : id);
+  };
+
+  const updateGrantStatus = async (id, status, apiEndpoint) => {
+    const isConfirmed = window.confirm(`Are you sure you want to mark this grant as ${status}?`);
+
+    if (isConfirmed) {
+      try {
+        const response = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ grantId: id, status }),
+        });
+
+        if (response.ok) {
+          console.log(`Grant request ${status} successfully`);
+
+          setUpdatedSchemes(prevSchemes =>
+            prevSchemes.map(scheme =>
+              scheme._id === id ? { ...scheme, grant_status: { status } } : scheme
+            )
+          );
+        } else {
+          console.error(`Failed to ${status.toLowerCase()} the grant request`);
+        }
+      } catch (error) {
+        console.error(`An error occurred while ${status.toLowerCase()} the grant request:`, error);
+      }
+    }
+  };
+
+  const handleReject = (id) => updateGrantStatus(id, 'Rejected', 'admin/grant/reject');
+  const handleAccept = (id) => updateGrantStatus(id, 'Approved', 'admin/grant/accept');
+  const handleInProgress = (id) => updateGrantStatus(id, 'In Progress', 'admin/grant/progress');
+
+  // Custom sorting function
+  const sortSchemes = (schemes) => {
+    const order = ['Applied', 'In Progress', 'Approved', 'Rejected'];
+    return [...schemes].sort((a, b) => {
+      return order.indexOf(a.grant_status.status) - order.indexOf(b.grant_status.status);
+    });
+  };
+
+  // Effect to sort schemes whenever updatedSchemes changes
+  useEffect(() => {
+    setUpdatedSchemes(sortSchemes(grantSchemes));
+  }, [grantSchemes]);
+
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f3f4f6' }}>
-      {/* Sidebar */}
-      <div style={{ width: '250px', backgroundColor: '#4a90e2', boxShadow: '2px 0 5px rgba(0,0,0,0.1)', color: '#fff' }}>
-        <div style={{ padding: '20px' }}>
-          <h1 style={{ fontSize: '20px', fontWeight: 'bold' }}>Admin Dashboard</h1>
-        </div>
-        <nav style={{ marginTop: '20px' }}>
-          <button style={navButtonStyle} onClick={() => setSelectedTab('startups')}>Startups</button>
-          <button style={navButtonStyle} onClick={() => setSelectedTab('eir')}>EIR Requests</button>
-          <button style={navButtonStyle} onClick={() => setSelectedTab('grants')}>Grant Requests</button>
-          <button style={navButtonStyle} onClick={() => setSelectedTab('messages')}>Messages</button>
-        </nav>
-      </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold mb-6">Grant Scheme Applications</h1>
 
-      {/* Main content */}
-      <div style={{ flex: 1, padding: '20px', overflow: 'auto' }}>
-        {selectedTab === 'startups' && (
-          <div>
-            <h2 style={{ color: '#333', marginBottom: '15px' }}>Startups</h2>
-            <table style={tableStyle}>
-              <thead>
-                <tr style={{ backgroundColor: '#007bff', color: '#fff' }}>
-                  <th>Company Name</th>
-                  <th>Industry</th>
-                  <th>Grant Created At</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {startups.map((startup) => (
-                  <tr key={startup._id}>
-                    <td>{startup.kyc?.company_name || 'N/A'}</td>
-                    <td>{startup.kyc?.company_details?.industry || 'N/A'}</td>
-                    <td>{startup.grants?.[0]?.created_at ? new Date(startup.grants[0].created_at).toLocaleDateString() : 'N/A'}</td>
-                    <td>
-                      <button
-                        style={detailsButtonStyle}
-                        onClick={() => toggleDetails(startup._id)}
-                      >
-                        {visibleDetails === startup._id ? 'Hide Details' : 'View Details'}
-                      </button>
-                    </td>
-                  </tr>
+      {sortSchemes(updatedSchemes).map((scheme) => (
+        <div key={scheme._id} className="border rounded-lg shadow-md mb-6 p-5 bg-white">
+          <div className="flex justify-between items-center">
+            <h2
+              className="text-xl font-semibold cursor-pointer"
+              onClick={() => toggleProjectDropdown(scheme._id)}
+            >
+              {scheme.project_proposal.project_title}
+              <span className="ml-2">{openProject === scheme._id ? '▲' : '▼'}</span>
+            </h2>
+            <p className="text-gray-500">
+              Submitted by {scheme.applicant.name} on{' '}
+              {new Date(scheme.created_at).toLocaleDateString()}
+            </p>
+          </div>
+
+          {openProject === scheme._id && (
+            <div className="mt-4 bg-gray-100 p-4 rounded-lg">
+              <h3 className="font-medium mb-2">Project Proposal</h3>
+              <p>
+                <strong>Description:</strong> {scheme.project_proposal.description}
+              </p>
+              <p>
+                <strong>Objectives:</strong>
+              </p>
+              <ul className="list-disc list-inside ml-4">
+                {scheme.project_proposal.objectives.map((objective, index) => (
+                  <li key={index}>{objective}</li>
                 ))}
-              </tbody>
-            </table>
+              </ul>
+              <p className="mt-4">
+                <strong>Total Funding Required:</strong> ${scheme.project_proposal.budget.total_funding_required.toLocaleString()}
+              </p>
+              <p>
+                <strong>Funding Breakdown:</strong>
+              </p>
+              <ul className="list-disc list-inside ml-4">
+                {scheme.project_proposal.budget.funding_breakdown.map((item, index) => (
+                  <li key={index}>
+                    {item.item}: ${item.amount.toLocaleString()}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-            {/* Toggle startup details */}
-            {startups.map(
-              (startup) =>
-                visibleDetails === startup._id && (
-                  <div
-                    key={startup._id}
-                    style={{
-                      marginTop: '20px',
-                      border: '1px solid #007bff',
-                      padding: '10px',
-                      borderRadius: '5px',
-                      backgroundColor: '#e9f5ff',
-                    }}
-                  >
-                    <h3 style={{ color: '#007bff' }}>{startup.kyc?.company_name || 'N/A'} Details</h3>
-                    <p><strong>Industry:</strong> {startup.kyc?.company_details?.industry || 'N/A'}</p>
-                    <p><strong>Incorporation Date:</strong> {startup.kyc?.company_details?.incorporation_date ? new Date(startup.kyc.company_details.incorporation_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Website:</strong> {startup.kyc?.company_details?.website || 'N/A'}</p>
-                    <p><strong>Contact Person:</strong> {startup.kyc?.contact_person?.name || 'N/A'}</p>
-                    <p><strong>Contact Email:</strong> {startup.kyc?.contact_person?.email || 'N/A'}</p>
-                    <p><strong>Contact Phone:</strong> {startup.kyc?.contact_person?.phone || 'N/A'}</p>
-                    <p><strong>Grant Created At:</strong> {startup.grants?.[0]?.created_at ? new Date(startup.grants[0].created_at).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Other Field 1:</strong> {startup.otherField1 || 'N/A'}</p>
-                    <p><strong>Other Field 2:</strong> {startup.otherField2 || 'N/A'}</p>
-                    {/* You can keep adding other fields from the startup object */}
-                  </div>
-                )
+          <div className="mt-4 border-t pt-4">
+            <button
+              className="text-xl font-semibold w-full text-left"
+              onClick={() => toggleApplicantDropdown(scheme._id)}
+            >
+              Applicant Details
+              <span className="ml-2">{openApplicant === scheme._id ? '▲' : '▼'}</span>
+            </button>
+
+            {openApplicant === scheme._id && (
+              <div className="mt-2 bg-gray-100 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">Applicant Details</h3>
+                <p>
+                  <strong>Name:</strong> {scheme.applicant.name}
+                </p>
+                {scheme.applicant.organization && (
+                  <p>
+                    <strong>Organization:</strong> {scheme.applicant.organization}
+                  </p>
+                )}
+                <p>
+                  <strong>Email:</strong> {scheme.applicant.contact_details.email}
+                </p>
+                {scheme.applicant.contact_details.phone && (
+                  <p>
+                    <strong>Phone:</strong> {scheme.applicant.contact_details.phone}
+                  </p>
+                )}
+                {scheme.applicant.contact_details.address && (
+                  <p>
+                    <strong>Address:</strong> {scheme.applicant.contact_details.address}
+                  </p>
+                )}
+              </div>
             )}
           </div>
-        )}
 
-        {selectedTab === 'eir' && (
-          <EIRRequests eirRequests={eirRequests} />
-        )}
+          <div className="mt-4 flex items-center">
+            <div className="flex-1">
+              <span
+                className={`px-3 py-1 rounded font-semibold ${
+                  scheme.grant_status.status === 'Approved'
+                    ? 'bg-green-200 text-green-800'
+                    : scheme.grant_status.status === 'Rejected'
+                    ? 'bg-red-200 text-red-800'
+                    : 'bg-yellow-200 text-yellow-800'
+                }`}
+              >
+                {scheme.grant_status.status}
+              </span>
+            </div>
 
-        {selectedTab === 'grants' && (
-          <GrantApplicationComponent grantSchemes={grantRequests} />
-        )}
+            <div className="flex space-x-2">
+              <button
+                className={`bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                  scheme.grant_status.status === 'Rejected' || scheme.grant_status.status === 'Approved'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                onClick={() => handleReject(scheme._id)}
+                disabled={scheme.grant_status.status === 'Rejected' || scheme.grant_status.status === 'Approved'}
+              >
+                Reject
+              </button>
 
-        {selectedTab === 'messages' && (
-          <StartupMessages />
-        )}
-      </div>
+              <button
+                className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                  scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                onClick={() => handleAccept(scheme._id)}
+                disabled={scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'}
+              >
+                Accept
+              </button>
+
+              <button
+                className={`bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                  scheme.grant_status.status === 'In Progress' || scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                onClick={() => handleInProgress(scheme._id)}
+                disabled={scheme.grant_status.status === 'In Progress' || scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'}
+              >
+                Mark as In Progress
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
-
-// Simple styling for the table
-const tableStyle = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  marginBottom: '20px',
-};
-
-const navButtonStyle = {
-  display: 'block',
-  width: '100%',
-  padding: '10px 20px',
-  backgroundColor: '#6c757d',
-  border: 'none',
-  textAlign: 'left',
-  cursor: 'pointer',
-  fontSize: '16px',
-  margin: '2px 0',
-  color: '#fff',
-  transition: 'background-color 0.2s',
-};
-
-const detailsButtonStyle = {
-  padding: '8px 16px',
-  backgroundColor: '#28a745',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-  fontSize: '14px',
-};
-
-// Add hover effect for buttons
-navButtonStyle[':hover'] = {
-  backgroundColor: '#5a6268',
-};
-
-detailsButtonStyle[':hover'] = {
-  backgroundColor: '#218838',
-};
