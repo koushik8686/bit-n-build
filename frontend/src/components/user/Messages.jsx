@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { socket } from '../../socket'; // Ensure this path is correct
+import Cookies from 'js-cookie'; // Import the js-cookie library
+const io = require('socket.io-client');
+const socket = io.connect("http://localhost:4000");
 
 export default function Messages({ initialMessages }) {
   const [messages, setMessages] = useState(initialMessages || []);
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
-    // Listen for 'connect' event to confirm connection
-    socket.on('connect', () => {
-      console.log('Connected to the server with ID:', socket.id);
-    });
+    // Check for the user's ID from cookies
+    const userId = Cookies.get('user'); // Get the user ID from cookies
+
+    // Join the room based on the user's ID
+    if (userId) {
+      socket.emit('joinRoom', userId);
+      console.log(`User joined room: ${userId}`);
+    } else {
+      console.error('User ID not found in cookies.');
+    }
 
     // Listen for incoming messages
     socket.on('receiveMessage', (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
+    // Listen for 'connect' event to confirm connection
+    socket.on('connect', () => {
+      console.log('Connected to the server with ID:', socket.id);
+    });
+
     // Clean up the socket connection when the component unmounts
     return () => {
-      socket.off('connect');
       socket.off('receiveMessage');
-      socket.disconnect();
+      socket.off('connect');
     };
   }, []);
 
@@ -28,16 +40,21 @@ export default function Messages({ initialMessages }) {
     if (newMessage.trim()) {
       const messageData = {
         message: newMessage,
+        sender: 'User',
+        receiver: 'admin', // Indicate the message is for the admin
         date_sent: new Date(),
       };
 
-      // Emit 'sendMessage' event to server
-      socket.emit('sendMessage', messageData);
-
-      // Optionally update UI immediately before confirmation from the server
-      setMessages([...messages, messageData]);
-
-      setNewMessage(''); // Clear the input field
+      // Get the user's ID from cookies
+      const userId = Cookies.get('user'); // Assuming this is the same as userId
+      if (userId) {
+        // Emit 'sendMessage' event to server with the user's ID and message data
+        socket.emit('sendMessage', { roomId: userId, messageData });
+        // Optionally update UI immediately before confirmation from the server
+        setNewMessage(''); // Clear the input field
+      } else {
+        console.error('User ID not found in cookies.');
+      }
     }
   };
 
@@ -53,8 +70,8 @@ export default function Messages({ initialMessages }) {
       <div className="messages-box max-h-64 overflow-y-auto mb-4">
         {messages.map((msg, index) => (
           <div key={index} className="mt-4">
-            <p><strong>Message:</strong> {msg.message}</p>
-            <p><strong>Date Sent:</strong> {new Date(msg.date_sent).toDateString()}</p>
+            <p><strong>{msg.sender}:</strong> {msg.message}</p>
+            <p><strong>Date Sent:</strong> {new Date(msg.date_sent).toLocaleString()}</p>
           </div>
         ))}
       </div>

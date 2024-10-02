@@ -21,22 +21,10 @@ router.post('/login', async (req, res) => {
   router.get('/Startups', async (req, res) => {
     try {
       // Fetch all startups and only the required fields
-      const startups = await Startup.find({}, {
-        'kyc.company_name': 1,
-        'kyc.company_details.industry': 1,
-        'grants.grant_application.status': 1,
-      });
-  
+      const startups = await Startup.find();
       // Format the data for the response
-      const responseData = startups.map(startup => ({
-        name: startup.kyc.company_name,  // Name field
-        industry: startup.kyc.company_details.industry || 'N/A',  // Industry field
-        status: startup.grants.length > 0 ? startup.grants[0].grant_application.status : 'No Application',  // Grant Status
-        action: 'View'  // Placeholder for the action fi (eldYou can modify this)
-      }));
-  
       // Send the formatted data
-      res.status(200).json(responseData);
+      res.status(200).send(startups);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Server Error' });
