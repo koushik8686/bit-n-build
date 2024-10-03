@@ -32,29 +32,25 @@ Creating a website for managing startups.
 
 ## Instructions for Running The Code:
 
-1. Clone the repository:
-   \`\`\`bash
-   git clone https://github.com/koushik8686/bit-n-build/
-   \`\`\`
+```bash
+# 1. Clone the repository
+git clone https://github.com/koushik8686/bit-n-build/
 
-2. Navigate to the project directory:
-   \`\`\`bash
-   cd startup-progress-dashboard
-   \`\`\`
+# 2. Navigate to the project directory
+cd bit-n-build/startup-progress-dashboard
 
-3. Install the dependencies:
-   \`\`\`bash
-   npm install
-   \`\`\`
+# 3. Install the dependencies
+npm install
 
-4. Open two integrated terminals, one for the backend and one for the frontend.
+# 4. Open two integrated terminals
 
-   In the **frontend** terminal, run:
-   \`\`\`bash
-   cd frontend
-   npm start
-   \`\`\`
+# In the **first terminal** (backend)
+npm run start:backend
 
+# In the **second terminal** (frontend)
+cd frontend
+npm start
+```
    The frontend will run at **http://localhost:3000**.
 
    In the **backend** terminal, run:
