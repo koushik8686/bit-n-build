@@ -32,7 +32,7 @@ Creating a website for managing startups.
 
 1. Clone the repository:
    \`\`\`bash
-   git clone https://github.com/your-repo/startup-progress-dashboard.git
+   git clone https://github.com/koushik8686/bit-n-build/
    \`\`\`
 
 2. Navigate to the project directory:
