@@ -62,6 +62,9 @@ We are using MongoDB Atlas. Create a `.env` file and place your connection strin
 ```bash
 URL="<Please Paste Your Connection Here>"
 ```
+### Admin Credentials:
+- **Username**: admin
+- **Password**: 12345
 
 ## Team Members and their Contributions:
 
