@@ -40,10 +40,7 @@ git clone https://github.com/koushik8686/bit-n-build/
 # 2. Navigate to the project directory
 cd bit-n-build/startup-progress-dashboard
 
-# 3. Install the dependencies
-npm install
-
-# 4. Open two integrated terminals
+# 3. Open two integrated terminals
 
 # In the **first terminal** (backend)
 cd backend
@@ -52,6 +49,7 @@ node server.js
 
 # In the **second terminal** (frontend)
 cd frontend
+npm i
 npm start
 ```
    The frontend will run at **http://localhost:3000**.
