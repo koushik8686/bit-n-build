@@ -1,3 +1,4 @@
+
 # Startup Progress Dashboard
 
 ## Code Crafters
@@ -45,20 +46,15 @@ npm install
 # 4. Open two integrated terminals
 
 # In the **first terminal** (backend)
-npm run start:backend
+cd backend
+npm i
+node server.js
 
 # In the **second terminal** (frontend)
 cd frontend
 npm start
 ```
    The frontend will run at **http://localhost:3000**.
-
-   In the **backend** terminal, run:
-   \`\`\`bash
-   cd backend
-   npm i
-   node server.js
-   \`\`\`
 
    The backend will run at **http://localhost:4000**.
 
