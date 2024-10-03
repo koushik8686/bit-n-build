@@ -6,6 +6,7 @@
 ## Project Idea
 
 Creating a website for managing startups.
+[Watch Demo Video](https://youtu.be/ON9zdNgzaTI)
 
 ### TECH STACK used:
 - We have used **MERN Stack** for this project
