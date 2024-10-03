@@ -58,9 +58,9 @@ npm start
 
 ### MongoDB Atlas Configuration:
 We are using MongoDB Atlas. Create a `.env` file and place your connection string inside:
-\`\`\`
+```bash
 URL="<Please Paste Your Connection Here>"
-\`\`\`
+```
 
 ## Team Members and their Contributions:
 
