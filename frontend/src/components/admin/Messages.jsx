@@ -79,7 +79,7 @@ export default function StartupMessages() {
       roomId: selectedStartup,
       messageData: newMessage,
     })
-    setMessages((prevMessages) => [...prevMessages, newMessage])
+    // setMessages((prevMessages) => [...prevMessages, newMessage])
     setInputMessage('')
   }
 

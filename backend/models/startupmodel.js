@@ -15,7 +15,8 @@ const StartupKYCSchema = new Schema({
     industry: { type: String },
     website: { type: String }
   },
-  created_at: { type: Date, default: Date.now }
+  created_at: { type: Date, default: Date.now },
+  profile_picture: String
 });
 
 // Progress Tracking Schema

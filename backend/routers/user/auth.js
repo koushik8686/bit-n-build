@@ -12,6 +12,17 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../../uploads/profiles/'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Generate unique file names
+  }
+});
+
+const upload = multer({ storage });
+
 // Registration route
 router.post('/register', async (req, res) => {
   const { username, password, email } = req.body;
@@ -57,11 +68,12 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/kyc', async (req, res) => {
+router.post('/kyc', upload.single('profile_pic') ,  async (req, res) => {
   const {
     company_name, address, contact_person_name, contact_person_email,
     contact_person_phone, incorporation_date, industry, website, user
   } = req.body;
+  const profilePicPath = req.file ? req.file.filename : "default.png"; // Path to the uploaded profile picture
 
   try {
     // Create the startup (KYC) details
@@ -78,12 +90,14 @@ router.post('/kyc', async (req, res) => {
           incorporation_date,
           industry,
           website
-        }
+        },
+        profile_picture:profilePicPath
       },
       progress: [],
       reports: [],
       messages: [],
-      grants: []
+      grants: [],
+      
     });
 
     // Save the KYC details to the database

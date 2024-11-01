@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 import Cookies from 'js-cookie'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useGoogleLogin } from '@react-oauth/google'
+import { FcGoogle } from 'react-icons/fc'
+
 
 export default function Component() {
   const [isLoading, setIsLoading] = useState(false)
@@ -20,14 +23,16 @@ export default function Component() {
     incorporation_date: '',
     industry: '',
     website: '',
-    user: ''
+    user: '',
   })
+ const user = Cookies.get('user')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
     try {
-      const { data } = await axios.post(`/auth/register`, { username, password, email })
+      console.log(username);
+      const { data } = await axios.post(`http://localhost:4000/auth/register`, { username, password, email })
       alert(data.message)
       if (data.message === "Registration successful!") {
         Cookies.set('user', data.userId)
@@ -35,25 +40,40 @@ export default function Component() {
         setShowKYCForm(true)
       }
     } catch (error) {
+      console.log(error);
       alert('An error occurred during registration.')
     }
     setIsLoading(false)
   }
 
   const handleKYCSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    try {
-      const { data } = await axios.post(`/auth/kyc`, kycDetails)
-      alert('KYC submitted successfully!')
-      Cookies.set('startup', data.startup)
-      navigate('/home')
-    } catch (error) {
-      alert('An error occurred during KYC submission.')
-    }
-    setIsLoading(false)
-  }
+    e.preventDefault();
+    const formData = new FormData();
+  
+    // Append all fields from kycDetails to the FormData
+    Object.entries(kycDetails).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
 
+    // Append the user ID stored in cookies  
+    try {
+      const response = await fetch('http://localhost:4000/auth/kyc', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        console.log('KYC submitted successfully!', result);
+        navigate('/home');
+      } else {
+        console.log('Error submitting KYC:', result.message);
+      }
+    } catch (error) {
+      console.error('Failed to submit KYC:', error);
+    }
+  };
+  
   useEffect(() => {
     const canvas = document.getElementById('bgCanvas')
     const ctx = canvas.getContext('2d')
@@ -87,7 +107,7 @@ export default function Component() {
 
         ctx.beginPath()
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(0, 112, 192, 0.5)' // Dark bluish color
+        ctx.fillStyle = 'rgba(72, 207, 203, 0.5)' // #48CFCB with opacity
         ctx.fill()
       })
     }
@@ -98,78 +118,105 @@ export default function Component() {
       cancelAnimationFrame(animationFrameId)
     }
   }, [])
+  const responsegoogle = async (authtesult) => {
+    try {
+      console.log(authtesult);
+      if (authtesult) {
+        const response = await axios.get(`http://localhost:4000/auth/google`, { params: { tokens: authtesult } });
+        if (response.data.message) {
+          if (response.data.message === 'Email Already Exists') {
+            Cookies.set('user', response.data.userId);
+             navigate('/home')
+          }
+          Cookies.set('user', response.data.userId);
+          console.log('Registration successful:', response.data);
+          setShowKYCForm(!showKYCForm)
+        }
+      }
+    } catch (error) {
+      console.log("error is ", error);
+    }
+  }
 
+  const googlelogin = useGoogleLogin({
+    onSuccess: responsegoogle,
+    onError: responsegoogle,
+  });
+  
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a192f] p-4 relative"> {/* Dark bluish background */}
-      <canvas id="bgCanvas" className="absolute top-0 left-0 w-full h-full" />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="rounded-lg overflow-hidden shadow-2xl bg-white bg-opacity-90">
-          <div className="bg-gradient-to-r from-[#0f4c75] to-[#1b262c] p-8 text-white"> {/* Dark bluish gradient */}
-            <h2 className="text-3xl font-bold text-center mb-2">Welcome</h2>
-            <p className="text-center text-blue-100">Sign up to continue</p>
-          </div>
-          <div className="p-8">
-            {!showKYCForm ? (
-              <motion.div
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5] p-4 relative">
+        <canvas id="bgCanvas" className="absolute top-0 left-0 w-full h-full" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md relative z-10"
+        >
+          <div className="rounded-2xl overflow-hidden shadow-2xl bg-white">
+            <div className="bg-[#229799] p-8 text-white">
+              <h6 className="text-2xl font-bold text-center mb-2">Please Provide Us With Start Up Details</h6>
+            </div>
+            <div className="p-8 space-y-6">
+              {!showKYCForm ? (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <label htmlFor="username" className="block text-sm font-medium text-[#424242]">Username</label>
+                      <input 
+                        id="username" 
+                        className="mt-1 block w-full px-4 py-3 bg-[#F5F5F5] border border-[#48CFCB] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#229799] focus:border-transparent text-[#424242] placeholder-[#424242]"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required 
+                        placeholder="Enter your username"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-[#424242]">Email</label>
+                      <input 
+                        id="email" 
+                        type="email" 
+                        className="mt-1 block w-full px-4 py-3 bg-[#F5F5F5] border border-[#48CFCB] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#229799] focus:border-transparent text-[#424242] placeholder-[#424242]"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required 
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="password" className="block text-sm font-medium text-[#424242]">Password</label>
+                      <input 
+                        id="password" 
+                        type="password" 
+                        className="mt-1 block w-full px-4 py-3 bg-[#F5F5F5] border border-[#48CFCB] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#229799] focus:border-transparent text-[#424242] placeholder-[#424242]"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required 
+                        placeholder="Enter your password"
+                      />
+                    </div>
+                    <button 
+                      className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#229799] hover:bg-[#48CFCB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#48CFCB] transition-colors duration-200"
+                      type="submit" 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Loading...' : 'Register'}
+                    </button>
+                  </form>
+                </motion.div>
+              ) : (
+                <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleKYCSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-                    <input 
-                      id="username" 
-                      className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                    <input 
-                      id="email" 
-                      type="email" 
-                      className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                    <input 
-                      id="password" 
-                      type="password" 
-                      className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required 
-                    />
-                  </div>
-                  <button 
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0f4c75] hover:bg-[#1b262c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    type="submit" 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Loading...' : 'Register'}
-                  </button>
-                </form>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <h3 className="text-2xl font-bold mb-4">Complete KYC</h3>
-                <form onSubmit={handleKYCSubmit} className="space-y-4">
                   {Object.entries(kycDetails).map(([key, value]) => (
                     key !== 'user' && (
                       <div key={key} className="space-y-2">
@@ -187,19 +234,45 @@ export default function Component() {
                       </div>
                     )
                   ))}
-                  <button 
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0f4c75] hover:bg-[#1b262c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    type="submit" 
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="profile_pic" className="block text-sm font-medium text-[#424242]">Profile Picture</label>
+                    <input
+                      id="profile_pic"
+                      type="file"
+                      className="mt-1 block w-full px-4 py-3 bg-[#F5F5F5] border border-[#48CFCB] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#229799] focus:border-transparent text-[#424242] placeholder-[#424242]"
+                      onChange={(e) => setKycDetails({ ...kycDetails, profile_pic: e.target.files[0] })}
+                      required
+                    />
+                  </div>
+                  <button
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#229799] hover:bg-[#48CFCB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#48CFCB] transition-colors duration-200"
+                    type="submit"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Submitting...' : 'Submit KYC'}
+                    {isLoading ? 'Submitting KYC...' : 'Submit KYC'}
                   </button>
                 </form>
               </motion.div>
-            )}
+              
+              )}
+              <div className="relative flex items-center justify-center mt-8">
+                <span className="absolute inset-x-0 h-px bg-[#48CFCB]"></span>
+                <span className="relative px-4 text-sm text-[#424242] bg-white">or</span>
+              </div>
+            
+             
+                  <button
+                    onClick={googlelogin}
+                    className="mt-4 flex items-center justify-center w-full py-3 px-4 border border-[#48CFCB] rounded-lg shadow-sm text-sm font-medium text-[#424242] bg-white hover:bg-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#48CFCB] transition-colors duration-200"
+                  >
+                    <FcGoogle className="mr-2" /> Sign in with Google
+                  </button>
+
+              <Link to={'/login'}>Login</Link>
+            </div>
           </div>
-        </div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
   )
 }

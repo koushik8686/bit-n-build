@@ -6,6 +6,7 @@ import AdminLogin from './components/admin/Login';
 import Admin from './components/admin/Admin';
 import Login from './components/user/Login';
 import Progress from './components/admin/Progress'
+import Temp from './components/admin/Temp';
 //helo
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Login />} />
         <Route path='/home' element={<Home />} />
+        <Route path='/temp' element={<Temp />} />
         <Route path='/admin/login' element={<AdminLogin/>} />
         <Route path='/admin' element={<Admin />} />
         <Route path='/progress/:startup' element={<Progress/>} />

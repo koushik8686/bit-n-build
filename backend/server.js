@@ -9,6 +9,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const messageModel = require('./models/adminmessages')
 const startupModel = require("./models/startupmodel")
+const Messages = require('./models/adminmessages')
 
 dotenv.config();
 
