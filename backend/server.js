@@ -10,9 +10,8 @@ const dotenv = require('dotenv');
 const messageModel = require('./models/adminmessages')
 const startupModel = require("./models/startupmodel")
 const Messages = require('./models/adminmessages')
-
 dotenv.config();
-
+const path = require('path')
 // Connect to MongoDB
 mongoose.connect(process.env.URL||"mongodb://127.0.0.1:27017/hakathin", { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -24,8 +23,7 @@ const io = new Server(server, {
   },
 });
 
-
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -36,6 +34,7 @@ app.use("/admin", require("./routers/admin/auth"));
 app.use("/user", require("./routers/user/home"));
 app.use("/submit", require("./routers/user/forms"));
 app.use("/get" , require("./routers/admin/Data"))
+app.use('/ads/' , require('./routers/advertisement/advertisement'))
 
 // Simple route for testing
 app.get('/', (req, res) => {
@@ -44,8 +43,7 @@ app.get('/', (req, res) => {
 
 // Socket.IO connection
 io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-
+    // console.log('A user connected:', socket.id);
     // User joins a room based on their startupid from cookies
     socket.on('joinRoom', (startupid) => {
         socket.join(startupid); // Join the room with startupid

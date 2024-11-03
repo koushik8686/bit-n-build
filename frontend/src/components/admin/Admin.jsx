@@ -8,6 +8,7 @@ import AdminNavbar from './AdminNavbar'
 import EIRRequests from './EirRequests'
 import GrantApplicationComponent from './GrantRequests'
 import StartupMessages from './Messages'
+import AdsComponent from './Ads'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -120,27 +121,11 @@ export default function Admin() {
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <DetailItem label="Industry" value={startup.kyc?.company_details?.industry} />
-                                  <DetailItem
-                                    label="Incorporation Date"
-                                    value={
-                                      startup.kyc?.company_details?.incorporation_date
-                                        ? new Date(startup.kyc.company_details.incorporation_date).toLocaleDateString()
-                                        : 'N/A'
-                                    }
-                                  />
                                   <DetailItem label="Website" value={startup.kyc?.company_details?.website} />
                                   <DetailItem label="Contact Person" value={startup.kyc?.contact_person?.name} />
                                   <DetailItem label="Contact Email" value={startup.kyc?.contact_person?.email} />
-                                  <DetailItem label="Contact Phone" value={startup.kyc?.contact_person?.phone} />
-                                  <DetailItem
-                                    label=" Created At"
-                                    value={
-                                      startup.grants?.[0]?.created_at
-                                        ? new Date(startup.grants[0].created_at).toLocaleDateString()
-                                        : 'N/A'
-                                    }
-                                  />
-                                  <Link  className="font-semibold text-purple-700"  to={`/progress/${startup._id}`}>Progress</Link>
+                                  <DetailItem label="Contact Phone" value={startup.kyc?.contact_person?.phone} /> 
+                                  <Link  className="  font-semibold text-purple-700"  to={`/progress/${startup._id}`}>Progress</Link>
                                 </div>
                               </div>
                             </td>
@@ -160,6 +145,8 @@ export default function Admin() {
         {selectedTab === 'budgetrequests' && <GrantApplicationComponent grantSchemes={grantRequests} />}
 
         {selectedTab === 'messages' && <StartupMessages />}
+
+        {selectedTab === 'ads' && <AdsComponent />}
       </div>
     </div>
   )
@@ -173,3 +160,4 @@ function DetailItem({ label, value }) {
     </div>
   )
 }
+

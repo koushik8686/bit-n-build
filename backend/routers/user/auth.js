@@ -2,7 +2,10 @@ const express = require('express');
 const User = require('../../models/usermodel');
 const Startup = require("../../models/startupmodel")
 const router = express.Router();
+const multer = require('multer')
 var nodemailer = require('nodemailer');
+const path = require('path');
+const axios = require('axios')
 const senderemail = "hexart637@gmail.com";
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -11,6 +14,17 @@ const transporter = nodemailer.createTransport({
         pass: 'zetk dsdm imvx keoa'
     }
 });
+async function getUserInfo(accessToken) {
+  try {
+      const userRes = await axios.get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`
+      );
+      return userRes.data;
+  } catch (error) {
+      console.log(error);
+      throw new Error('Error fetching user info from Google');
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -130,6 +144,37 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Failed to log in' });
   }
 });
+
+router.get('/google', async function (req, res) {
+  try {
+      const { tokens } = req.query;
+      const userInfo = await getUserInfo(tokens.access_token);
+      const { email, name } = userInfo;
+
+      console.log(email, name);
+
+      // Check if the user already exists in the database
+      const userExists = await User.findOne({ email: email });
+      if (userExists) {
+          return res.status(200).send({ message: "Email Already Exists", userId: userExists._id , startup:userExists.startup });
+      }
+
+      // If the user doesn't exist, create a new user
+      const newUser = new User({
+          username: name,
+          email: email,
+          profile_pic: "",
+          company:"",
+          items: []
+      });
+
+      await newUser.save();
+      return res.status(200).send({ message: "Account Created Successfully", userId: newUser._id });
+  } catch (error) {
+      console.error('Error during Google login:', error);
+      return res.status(500).send("An error occurred during Google login.");
+  }
+})
 
 // Logout route
 router.post('/logout', (req, res) => {

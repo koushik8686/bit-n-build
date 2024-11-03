@@ -6,7 +6,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { FcGoogle } from 'react-icons/fc'
 
-
 export default function Component() {
   const [isLoading, setIsLoading] = useState(false)
   const [showKYCForm, setShowKYCForm] = useState(false)
@@ -126,6 +125,7 @@ export default function Component() {
         if (response.data.message) {
           if (response.data.message === 'Email Already Exists') {
             Cookies.set('user', response.data.userId);
+            Cookies.set('startup', response.data.startup);
              navigate('/home')
           }
           Cookies.set('user', response.data.userId);

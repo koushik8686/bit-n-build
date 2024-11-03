@@ -17,7 +17,7 @@ if ('serviceWorker' in navigator) {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <GoogleOAuthProvider>
+  <GoogleOAuthProvider clientId="343536126926-3blda68d5697uotestb3j536cri7h1i3.apps.googleusercontent.com">
   <React.StrictMode>
     <App />
   </React.StrictMode>

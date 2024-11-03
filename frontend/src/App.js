@@ -7,6 +7,7 @@ import Admin from './components/admin/Admin';
 import Login from './components/user/Login';
 import Progress from './components/admin/Progress'
 import Temp from './components/admin/Temp';
+import AdAnalyticsDashboard from './components/admin/AdAnalytics';
 //helo
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path='/temp' element={<Temp />} />
         <Route path='/admin/login' element={<AdminLogin/>} />
         <Route path='/admin' element={<Admin />} />
+        <Route path='/ad/analytics/:id' element={<AdAnalyticsDashboard />} />
         <Route path='/progress/:startup' element={<Progress/>} />
        </Routes>
       </BrowserRouter>

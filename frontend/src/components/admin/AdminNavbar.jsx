@@ -3,7 +3,7 @@
 import Cookie from 'js-cookie';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Users, FileText, Mail, ChevronRight, LogOut } from 'lucide-react';
+import { Home, Users, FileText, Mail, ChevronRight, LogOut , Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { name: 'EIR Requests', icon: Users },
   { name: 'Budget Requests', icon: FileText },
   { name: 'Messages', icon: Mail },
+  { name: 'Ads', icon: Megaphone }, // Added Logout here
   { name: 'Logout', icon: LogOut }, // Added Logout here
 ];
 
