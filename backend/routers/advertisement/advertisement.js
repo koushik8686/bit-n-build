@@ -168,12 +168,12 @@ router.get('/newrequests', async function (req, res) {
     const newRequests = await fetchDataFromGoogleSheets(); // Fetch data from Google Sheets
 
     for (const request of newRequests) {
+      console.log(request)
       // Check if the advertisement already exists in the database
       const existingAd = await Advertisement.findOne({
         email: request.Email,
         adverCompanyName: request['Ad name'],
       });
-
       if (!existingAd) {
         let localImageName = ''; // Store only the filename
 
@@ -196,10 +196,8 @@ router.get('/newrequests', async function (req, res) {
               const imagePath = path.join(__dirname, '../../uploads/ads', localImageName);
               
               const writer = fs.createWriteStream(imagePath);
-
               // Pipe response stream to file writer
               response.data.pipe(writer);
-
               // Wait until the file is completely written
               await new Promise((resolve, reject) => {
                 writer.on('finish', resolve);
@@ -217,12 +215,12 @@ router.get('/newrequests', async function (req, res) {
           name: request['Your Name'],
           email: request.Email,
           phone: request['Phone '],
+          description: request['Ad Description'],
           adverCompanyName: request['Ad name'],
           AdImgUrl: localImageName || request.Image, // Use filename or fallback to original URL if download fails
           companyLink: request['Company Link'],
           price: Number(request['Amount Willing To Pay']),
         });
-
         await newAd.save();
         console.log(`New advertisement added: ${request['Ad name']}`);
       } else {
@@ -270,7 +268,7 @@ function gcd(a, b) {
   return b === 0 ? a : gcd(b, a % b);
 }
 
-router.get('/all', async (req, res) => {
+router.get('/get/ad', async (req, res) => {
   try {
     const ads = await existingads.find();
     if (ads.length > 0) {
@@ -313,10 +311,6 @@ router.get('/all', async (req, res) => {
   }
 });
 
-// Utility function to find gcd of two numbers
-function gcd(a, b) {
-  return b === 0 ? a : gcd(b, a % b);
-}
 // Route to update click count based on adverCompanyId
 router.post('/click/:adverCompanyId', async (req, res) => {
   const { adverCompanyId } = req.params;
@@ -373,6 +367,7 @@ router.post('/add/:id', async (req, res) => {
       adverCompanyName: adRequest.adverCompanyName,
       AdImgUrl: adRequest.AdImgUrl,
       companyLink: adRequest.companyLink,
+      description: adRequest.description,
       noOfClicks: 0, 
       weight: req.body.weight || 1, 
       clicks:[]

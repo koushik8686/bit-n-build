@@ -73,16 +73,17 @@ router.post('/register', async (req, res) => {
     });
     // Save the user to the database
     const savedUser = await newUser.save();
-
     // Store user ID in session
     res.status(200).json({ message: 'Registration successful!', userId: savedUser._id });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Failed to register user' });
+    res.status(500).json({ error: 'Failed to register user' , erroris:error });
   }
 });
 
 router.post('/kyc', upload.single('profile_pic') ,  async (req, res) => {
+  console.log(req.body);
+
   const {
     company_name, address, contact_person_name, contact_person_email,
     contact_person_phone, incorporation_date, industry, website, user
@@ -121,6 +122,7 @@ router.post('/kyc', upload.single('profile_pic') ,  async (req, res) => {
     await User.findByIdAndUpdate(user, { startup: savedKYC._id });
     res.status(200).json({ message: 'KYC details submitted successfully', startup: savedKYC._id });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: 'Failed to submit KYC details' });
   }
 });

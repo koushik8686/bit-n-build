@@ -13,7 +13,7 @@ export default function StartupDetails({ kyc, progress }) {
   // Fetch ads data
   async function fetchAd() {
     try {
-      const response = await axios.get('http://localhost:4000/ads/all')
+      const response = await axios.get('http://localhost:4000/ads/get/ad')
       setAds(response.data)
     } catch (error) {
       console.error("Error fetching ads:", error)
@@ -136,7 +136,7 @@ export default function StartupDetails({ kyc, progress }) {
                 alt={ad.adverCompanyName}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gray-900 bg-opacity-50 p-2 text-white text-sm text-center">
-                {ad.adverCompanyName}
+                {ad.description}
               </div>
             </motion.div>
         </div>

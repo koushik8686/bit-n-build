@@ -72,7 +72,6 @@ export default function StartupHomepage() {
           <MonthlyProgress progress={startupData.progress} /> // Ensure progress is an array
         )}
       </main>
-
       <footer className="bg-gray-200 text-gray-800 py-4 text-center">
         StartX. .
       </footer>

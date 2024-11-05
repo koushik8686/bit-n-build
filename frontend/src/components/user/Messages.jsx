@@ -115,7 +115,6 @@ export default function ImprovedChat({ initialMessages = [] }) {
                 >
                   <p className="text-sm font-semibold">{msg.sender === 'User' ? 'You' : msg.sender}</p>
                   <p className="mt-1 text-sm lg:text-base">{msg.message}</p>
-                  <p className="text-xs opacity-70 mt-2">{new Date(msg.created_at).toLocaleString()}</p>
                 </motion.div>
               </motion.div>
             ))}

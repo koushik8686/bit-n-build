@@ -49,11 +49,25 @@ export default function AdAnalyticsDashboard() {
 
   const clicksByUserData = Object.entries(clicksByUser).map(([name, count]) => ({ name, count }));
 
-  const clickTimeline = adData.clicks.map(click => ({
-    date: new Date(click.timestamp).toLocaleDateString(),
-    clicks: 1
-  }));
+  // Assuming adData.clicks is an array of click objects with a `timestamp` property
+const clickTimeline = adData.clicks.reduce((acc, click) => {
+  const date = new Date(click.timestamp).toLocaleDateString();
 
+  // Find if the date already exists in the accumulator
+  const existingDate = acc.find(item => item.date === date);
+
+  if (existingDate) {
+    // If date exists, increment the clicks count
+    existingDate.clicks += 1;
+  } else {
+    // Otherwise, add a new entry with 1 click
+    acc.push({ date, clicks: 1 });
+  }
+
+  return acc;
+}, []);
+
+console.log(clickTimeline);
   const ctr = ((adData.noOfClicks / adData.impreessions) * 100).toFixed(2);
 
   const handleDownload = async () => {

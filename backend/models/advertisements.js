@@ -5,6 +5,7 @@ const AdvertisementSchema = new mongoose.Schema({
   name:String,
    email:String,
    phone:String,
+   description:String,
   adverCompanyName: {
     type: String,
     required: true,

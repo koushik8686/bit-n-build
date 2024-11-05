@@ -5,6 +5,7 @@ import Cookies from 'js-cookie'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { FcGoogle } from 'react-icons/fc'
+import Loader from '../Loader'
 
 export default function Component() {
   const [isLoading, setIsLoading] = useState(false)
@@ -22,7 +23,6 @@ export default function Component() {
     incorporation_date: '',
     industry: '',
     website: '',
-    user: '',
   })
  const user = Cookies.get('user')
 
@@ -48,7 +48,6 @@ export default function Component() {
   const handleKYCSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-  
     // Append all fields from kycDetails to the FormData
     Object.entries(kycDetails).forEach(([key, value]) => {
       formData.append(key, value);
@@ -60,7 +59,6 @@ export default function Component() {
         method: 'POST',
         body: formData,
       });
-  
       const result = await response.json();
       if (response.ok) {
         console.log('KYC submitted successfully!', result);
@@ -125,10 +123,13 @@ export default function Component() {
         if (response.data.message) {
           if (response.data.message === 'Email Already Exists') {
             Cookies.set('user', response.data.userId);
+            setKycDetails({ ...kycDetails, user: response.data.userId })
+            console.log(kycDetails);
             Cookies.set('startup', response.data.startup);
              navigate('/home')
           }
           Cookies.set('user', response.data.userId);
+          setKycDetails({ ...kycDetails, user: response.data.userId })
           console.log('Registration successful:', response.data);
           setShowKYCForm(!showKYCForm)
         }
@@ -205,7 +206,7 @@ export default function Component() {
                       type="submit" 
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Loading...' : 'Register'}
+                      {isLoading ? <Loader/> : 'Register'}
                     </button>
                   </form>
                 </motion.div>
@@ -218,7 +219,7 @@ export default function Component() {
                 <form onSubmit={handleKYCSubmit} className="space-y-6">
                   <div className="space-y-2">
                   {Object.entries(kycDetails).map(([key, value]) => (
-                    key !== 'user' && (
+                    (key !== 'user' && key!='profile_pic') && (
                       <div key={key} className="space-y-2">
                         <label htmlFor={key} className="block text-sm font-medium text-gray-700">
                           {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}

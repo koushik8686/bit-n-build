@@ -99,10 +99,14 @@ export default function GrantDetails({ grant }) {
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-teal-600 font-semibold"><strong>Amount:</strong> {g.project_proposal.budget.total_funding_required}</span>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    g.grant_status.status === "Approved" ? "bg-green-200 text-green-800" : "bg-yellow-200 text-yellow-800"
-                  }`}>
-                    <strong>Status:</strong> {g.grant_status.status}
-                  </span>
+                      g.grant_status.status === "Approved" 
+                        ? "bg-green-200 text-green-800" 
+                        : g.grant_status.status === "Rejected" 
+                        ? "bg-red-200 text-red-800" 
+                        : "bg-yellow-200 text-yellow-800"
+                    }`}>
+                      <strong>Status:</strong> {g.grant_status.status}
+                    </span>
                 </div>
                 {g.project_proposal.objectives && g.project_proposal.objectives.length > 0 && (
                   <div>
