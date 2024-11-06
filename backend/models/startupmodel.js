@@ -13,7 +13,9 @@ const StartupKYCSchema = new Schema({
   company_details: {
     incorporation_date: { type: Date },
     industry: { type: String },
-    website: { type: String }
+    website: { type: String },
+    pan_number: { type: String},
+    about: { type: String}
   },
   created_at: { type: Date, default: Date.now },
   profile_picture: String

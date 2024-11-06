@@ -5,26 +5,14 @@ const GrantSchemeSchema = new Schema({
   startup_id: String,          // Startup ID for identification
   applicant: {
     name: { type: String, required: true },                      // Name of the applicant or organization
-    organization: { type: String },
-    org_pan:String,                              // Name of the organization (if applicable)
+    organization: { type: String },                              // Name of the organization (if applicable)
     contact_details: {                                           
       email: { type: String, required: true },                   // Applicant's email
       phone: { type: String },                                   // Applicant's phone number
       address: { type: String }                                  // Applicant's address
     }
   },
-  project_proposal: {
-    project_title: { type: String, required: true },             // Title of the project
-    description: { type: String, required: true },               // Detailed description of the project
-    objectives: [{ type: String }],                              // List of objectives
-    budget: {
-      total_funding_required: { type: Number, required: true },  // Total amount of funding needed
-      funding_breakdown: [{                                      // Breakdown of how the funding will be used
-        item: { type: String },
-        amount: { type: Number }
-      }]
-    }
-  },
+  description:String,
   grant_status: {
     status: { type: String, enum: ['Submitted', 'Approved', 'Rejected', 'Short Listed', 'Under Review'], default: 'Submitted' }, // Status of the grant
     decision_date: { type: Date }                                // Date of the grant decision

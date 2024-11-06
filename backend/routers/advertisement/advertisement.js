@@ -353,6 +353,10 @@ router.get('/getmetrics', async (req, res) => {
 
 router.post('/add/:id', async (req, res) => {
   const { id } = req.params;
+   currentIndex = -1;
+ currentWeight = 0;
+ maxWeight = 0;
+gcdWeight = 1;
   try {
     // Find the ad request by ID
     const adRequest = await Advertisement.findById(id);

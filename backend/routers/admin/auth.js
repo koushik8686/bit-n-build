@@ -146,85 +146,75 @@ router.post('/grant/reject', async (req, res) => {
   }
 });
 
-router.post('/eir/accept', async (req, res) => {
-  const { requestId } = req.body;
 
-  try {
-    const updatedRequest = await EIR.findByIdAndUpdate(
-      requestId,
-      {
-        status: {
-          status: 'Approved',
-          decision_date: new Date(),
-        },
-      },
-      { new: true } // Return the updated document
-    );
+router.post('/eir/update-status', async (req, res) => {
+  const { requestId, actionType } = req.body;
+  console.log(req.body);
+  
+  let statusUpdate;
+  let emailSubject;
+  let emailBody;
+  switch (actionType) {
+    case 'approve':
+      statusUpdate = { status: { status: 'Approved', decision_date: new Date() } };
+      emailSubject = 'Acceptance of Grant Request';
+      emailBody = '<h1>Congratulations! Your grant request has been approved.</h1>';
+      break;
+    case 'reject':
+      statusUpdate = { status: { status: 'Rejected', decision_date: new Date() } };
+      emailSubject = 'Rejection of Grant Request';
+      emailBody = '<h1>Unfortunately, your grant request has been rejected.</h1>';
+      break;
 
-    if (!updatedRequest) {
-      return res.status(404).json({ message: 'EIR request not found' });
-    }
-    console.log('EIR request called');
-    res.status(200).json({ updatedRequest });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    case 'in-progress':
+      statusUpdate = { status: { status: 'In Progress', decision_date: new Date() } };
+      emailSubject = 'Grant Request In Progress';
+      emailBody = '<h1>Your grant request is currently in progress.</h1>';
+      break;
+
+    case 'shortlist':
+      statusUpdate = { status: { status: 'Short Listed', decision_date: new Date() } };
+      emailSubject = 'Grant Request Short Listed';
+      emailBody = '<h1>Good news! Your grant request has been short-listed.</h1>';
+      break;
+
+    case 'under-review':
+      statusUpdate = { status: { status: 'Under Review', decision_date: new Date() } };
+      emailSubject = 'Grant Request Under Review';
+      emailBody = '<h1>Your grant request is under review. We will notify you of any updates.</h1>';
+      break;
+
+    default:
+      return res.status(400).json({ message: 'Invalid action type' });
   }
+  console.log(statusUpdate)
+  // try {
+  //   const updatedRequest = await EIR.findByIdAndUpdate(requestId, statusUpdate, { new: true });
+  //   if (!updatedRequest) {
+  //     return res.status(404).json({ message: 'EIR request not found' });
+  //   }
+  //   // Send email notification
+  //   const mailOptions = {
+  //     from: process.env.EMAIL_USERNAME,
+  //     to: updatedRequest.applicant.contact_details.email,
+  //     subject: emailSubject,
+  //     html: emailBody
+  //   };
+
+  //   transporter.sendMail(mailOptions, (error, info) => {
+  //     if (error) {
+  //       console.log('Error sending email:', error);
+  //     } else {
+  //       console.log('Email sent successfully:', info.response);
+  //     }
+  //   });
+
+  //   res.status(200).json({ updatedRequest });
+  // } catch (error) {
+  //   console.error('Error updating EIR status:', error);
+  //   res.status(500).json({ message: 'Internal server error' });
+  // }
 });
-
-
-router.post('/eir/reject', async (req, res) => {
-  const { requestId } = req.body; // Extract the requestId from the request body
-  try {
-    console.log('EIR request called');
-    const updatedRequest = await EIR.findByIdAndUpdate(
-      requestId,
-      {
-        'status.status': 'Rejected', // Update status to Rejected
-        'status.decision_date': new Date(), // Set decision date to now
-      },
-      { new: true } // Return the updated document
-    );
-
-    if (!updatedRequest) {
-      return res.status(404).json({ message: 'EIR request not found' });
-    }
-
-    res.json({ updatedRequest });
-  } catch (error) {
-    console.error('Error updating EIR request:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-
-router.post('/eir/in-progress', async (req, res) => {
-  try {
-    const { requestId } = req.body;
-    console.log('EIR progress called');
-    console.log('Request ID:', requestId);
-
-    const updatedRequest = await EIR.findByIdAndUpdate(
-      requestId,
-      {
-        'status.status': 'In Progress', // Update status to Rejected
-        'status.decision_date': new Date(), // Set decision date to now
-      },
-      { new: true } // Return the updated document
-    );
-
-    if (!updatedRequest) {
-      console.log('No document found for ID:', requestId);
-      return res.status(404).json({ message: 'Request not found' });
-    }
-
-    res.json({ updatedRequest });
-  } catch (error) {
-    console.error('Error updating EIR status:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
 
 // Handle Accept Request
 router.post('/grant/accept', async (req, res) => {

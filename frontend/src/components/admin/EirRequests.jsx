@@ -7,42 +7,38 @@ const EIRRequests = ({ eirRequests }) => {
   const [openRequest, setOpenRequest] = useState(null);
   const [disabledButtons, setDisabledButtons] = useState({});
 
-  // Sync requests on prop update
   useEffect(() => {
     setUpdatedRequests(eirRequests.reverse());
   }, [eirRequests]);
 
-  // Toggle details for a specific request
   const toggleRequestDetails = (id) => {
     setOpenRequest(openRequest === id ? null : id);
   };
 
-  // Unified request handler for actions (accept, reject, in-progress)
   const handleRequestUpdate = async (actionType, requestId) => {
     setLoading(true);
     try {
-      const apiEndpoint = `admin/eir/${actionType}`;
+      // Use the unified route for updating status
+      const apiEndpoint = `/admin/eir/update-status`;
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId }),
+        body: JSON.stringify({ actionType, requestId }),
       });
-
+  
       if (!response.ok) throw new Error(`Failed to ${actionType} request`);
-
+  
       const updatedRequest = await response.json();
-
+  
+      // Update the request status in the state
       setUpdatedRequests((prev) =>
         prev.map((req) =>
           req._id === updatedRequest.updatedRequest._id ? updatedRequest.updatedRequest : req
         )
       );
-
-      const disableConfig =
-        actionType === 'in-progress'
-          ? { inProgress: true }
-          : { accept: true, reject: true, inProgress: true };
-
+  
+      // Disable the button for the performed action
+      const disableConfig = { [actionType]: true };
       setDisabledButtons((prev) => ({ ...prev, [requestId]: disableConfig }));
       setError(null);
     } catch (err) {
@@ -51,8 +47,8 @@ const EIRRequests = ({ eirRequests }) => {
       setLoading(false);
     }
   };
+  
 
-  // Render request items
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold mb-6">EIR Requests</h1>
@@ -116,36 +112,41 @@ const EIRRequests = ({ eirRequests }) => {
               <div className="flex space-x-2">
                 <button
                   className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
-                    isDisabled.accept || isDisabled.reject || isDisabled.inProgress
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
+                    isDisabled.accept ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   onClick={() => handleRequestUpdate('accept', request._id)}
-                  disabled={isDisabled.accept || isDisabled.reject || isDisabled.inProgress}
+                  disabled={isDisabled.accept}
                 >
                   Accept
                 </button>
 
                 <button
                   className={`bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
-                    isDisabled.accept || isDisabled.reject || isDisabled.inProgress
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
+                    isDisabled.reject ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   onClick={() => handleRequestUpdate('reject', request._id)}
-                  disabled={isDisabled.accept || isDisabled.reject || isDisabled.inProgress}
+                  disabled={isDisabled.reject}
                 >
                   Reject
                 </button>
+                <button
+                  className={`bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                    isDisabled.shortListed ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  onClick={() => handleRequestUpdate('short-listed', request._id)}
+                  disabled={isDisabled.shortListed}
+                >
+                  Mark Shortlisted
+                </button>
 
                 <button
-                  className={`bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
-                    isDisabled.inProgress ? 'opacity-50 cursor-not-allowed' : ''
+                  className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                    isDisabled.underReview ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  onClick={() => handleRequestUpdate('in-progress', request._id)}
-                  disabled={isDisabled.inProgress}
+                  onClick={() => handleRequestUpdate('under-review', request._id)}
+                  disabled={isDisabled.underReview}
                 >
-                  Mark as In Progress
+                  Under Review
                 </button>
               </div>
             </div>
