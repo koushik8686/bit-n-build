@@ -10,6 +10,8 @@ export default function GrantDetails({ grant }) {
     organization: '',
     email: '',
     phone: '',
+    pan:'',
+    aadhar: '',
     address: '',
     project_title: '',
     description: '',
@@ -180,6 +182,26 @@ export default function GrantDetails({ grant }) {
                   className="border border-gray-300 p-2 w-full rounded"
                 />
               </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Aadhar Number</label>
+                <input
+                  type="text"
+                  name="aadhar"
+                  value={formData.aadhar}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-2 w-full rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Pan Number</label>
+                <input
+                  type="text"
+                  name="pan"
+                  value={formData.pan}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-2 w-full rounded"
+                />
+              </div>
 
               <div className="mb-4">
                 <label className="block text-gray-700">Project Title</label>
@@ -192,7 +214,6 @@ export default function GrantDetails({ grant }) {
                   required
                 />
               </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700">Project Description</label>
                 <textarea

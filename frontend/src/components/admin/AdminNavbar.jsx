@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 const navItems = [
   { name: 'Startups', icon: Home },
   { name: 'EIR Requests', icon: Users },
-  { name: 'Budget Requests', icon: FileText },
+  { name: 'Grants Requests', icon: FileText },
   { name: 'Reviewers', icon: User },  // Added 'User' icon for Reviewers
   { name: 'Messages', icon: Mail },
   { name: 'Ads', icon: Megaphone }, 

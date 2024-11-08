@@ -24,7 +24,7 @@ router.post("/eir/:startup", async function (req, res) {
 router.post("/funds/:startup", async function (req, res) {
     try {
         // Make sure the body exists
-        const { name, organization, email, phone, address, project_title, description, total_funding_required, funding_breakdown } = req.body;
+        const { name, organization, email, phone,pan, aadhar, address, project_title, description, total_funding_required, funding_breakdown } = req.body;
 
         // Log the request body to ensure it's being received correctly
         console.log('Received data:', req.body)
@@ -34,6 +34,8 @@ router.post("/funds/:startup", async function (req, res) {
             applicant: {
                 name,
                 organization,
+                pan,
+                aadhar_num:aadhar,
                 contact_details: { email, phone, address },
             },
             project_proposal: {
@@ -86,3 +88,6 @@ router.post("/reports/:startup" ,async function(req, res) {
 
 
 module.exports = router
+
+
+

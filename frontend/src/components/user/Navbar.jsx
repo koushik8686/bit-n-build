@@ -17,7 +17,7 @@ export default function Navbar({ setActiveComponent }) {
   const navItems = [
     { name: 'Startup Details', action: () => setActiveComponent('details') },
     { name: 'EIR Application', action: () => setActiveComponent('eir') },
-    { name: 'Request Budget', action: () => setActiveComponent('grant') },
+    { name: 'Grants Application', action: () => setActiveComponent('grant') },
     { name: 'Messages', action: () => setActiveComponent('messages') },
     { name: 'Monthly Progress', action: () => setActiveComponent('monthly') },
   ]

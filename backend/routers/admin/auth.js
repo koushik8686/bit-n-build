@@ -59,7 +59,6 @@ router.get('/eir/:id', async (req, res) => {
     res.status(200).json(eirRequests);
   })
 })
-
 router.post('/eir/selectreviewer/:requestId', async (req, res) => {
   try {
     const requestId = req.params.requestId;
@@ -115,7 +114,7 @@ router.post('/eir/selectreviewer/:requestId', async (req, res) => {
       // Remove from EIR document reviews as well
       eirDocument.reviews = eirDocument.reviews.filter(review => review.reviewer_id.toString() !== reviewerId);
     }));
-    
+
     eirDocument.status.status = "Under Review"
     // Save the updated EIR document
     await eirDocument.save();
@@ -137,6 +136,77 @@ router.get('/grant-requests', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch grant requests' });
   }
 });
+router.get('/grant/:id', async (req, res) => {
+  GrantScheme.findById(req.params.id).then((GrantRequests) => {
+    if (!GrantRequests) {
+      return res.status(404).json({ message: 'Grant request not found' });
+    }
+    res.status(200).json(GrantRequests);
+  })
+})
+router.post('/grant/selectreviewer/:requestId', async (req, res) => {
+  try {
+    const requestId = req.params.requestId;
+    const selectedReviewerIds = req.body; // Array of currently selected reviewer IDs
+    const garnt = await GrantScheme.findById(requestId);
+    if (!garnt) {
+      return res.status(404).json({ message: 'GrantScheme document not found' });
+    }
+
+    // Current reviewers in GrantScheme document
+    const currentReviewerIds = garnt.reviews.map(review => review.reviewer_id.toString());
+
+    // Determine reviewers to add and remove
+    const reviewersToAdd = selectedReviewerIds.filter(id => !currentReviewerIds.includes(id));
+    const reviewersToRemove = currentReviewerIds.filter(id => !selectedReviewerIds.includes(id));
+
+    // Add new reviewers
+    await Promise.all(reviewersToAdd.map(async reviewerId => {
+      const reviewer = await Reviewer.findById(reviewerId);
+      if (!reviewer) {
+        return res.status(404).json({ message: `Reviewer with ID ${reviewerId} not found` });
+      }
+      // Add request ID to the reviewer's review list if not already present
+      if (!reviewer.grantsreviews.some(review => review.id === requestId)) {
+        reviewer.grantsreviews.push({ id: requestId });
+        await reviewer.save();     // Add reviewer details to the GrantScheme document
+        garnt.reviews.push({
+          reviewer_id: reviewer._id,
+          reviewer_name: reviewer.name,
+          status:"pending",
+          rating:0,
+          reviewer_email: reviewer.email,
+          reviewer_organization: reviewer.organization
+        });
+      }
+      console.log(garnt);
+    }));
+
+    // Remove unselected reviewers
+    await Promise.all(reviewersToRemove.map(async reviewerId => {
+      const reviewer = await Reviewer.findById(reviewerId);
+      if (!reviewer) {
+        return res.status(404).json({ message: `Reviewer with ID ${reviewerId} not found` });
+      }
+      // Remove the request ID from the reviewer's reviews
+      reviewer.grantsreviews = reviewer.grantsreviews.filter(review => review.id !== requestId);
+      await reviewer.save();
+      // Remove from GrantScheme document reviews as well
+      garnt.reviews = garnt.reviews.filter(review => review.reviewer_id.toString() !== reviewerId);
+    }));
+
+    garnt.grant_status.status = "Under Review"
+    garnt.grant_status.decision_date = Date.now();
+    // Save the updated GrantScheme document
+    await garnt.save();
+
+    res.status(200).json({ message: "Reviewers updated successfully", eir: garnt });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred while updating reviewers", error: error.message });
+  }
+});
+
 router.post('/grant/progress', async (req, res) => {
   const { grantId, status } = req.body;
 

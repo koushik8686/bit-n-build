@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
+import Toast from '../Toast';
+import Loader from '../Loader';
 
 const EIRApplications = () => {
   const [expandedApp, setExpandedApp] = useState(null);
@@ -8,8 +10,11 @@ const EIRApplications = () => {
   const [applications, setApplications] = useState([]);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [toast, setToast] = useState({ message: '', type: '' }); // Toast state
 
   const fetchEIRs = async () => {
+    setIsLoading(true); // Show loader
     try {
       const response = await axios.get(`http://localhost:4000/review/${reviewer}/reviews`);
       const sortedApplications = response.data.sort((a, b) => {
@@ -20,12 +25,42 @@ const EIRApplications = () => {
       setApplications(sortedApplications);
     } catch (error) {
       console.error(error);
+      setToast({ message: 'Failed to load applications.', type: 'error' }); // Show error toast
+    } finally {
+      setIsLoading(false); // Hide loader
     }
   };
 
   useEffect(() => {
     fetchEIRs();
   }, []);
+
+  const handleRatingChange = (value) => {
+    setRating(value);
+  };
+
+  const handleCommentChange = (event) => {
+    setComment(event.target.value);
+  };
+
+  const handleSubmitReview = async (appId) => {
+    setIsLoading(true); // Show loader while submitting review
+    try {
+      await axios.post(`http://localhost:4000/review/eir/${appId}/${reviewer}`, {
+        rating,
+        comment
+      });
+      setToast({ message: 'Review submitted successfully!', type: 'success' }); // Success toast
+      setRating(0);
+      setComment('');
+      fetchEIRs(); // Refresh data
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      setToast({ message: 'Failed to submit review. Please try again.', type: 'error' }); // Error toast
+    } finally {
+      setIsLoading(false); // Hide loader
+    }
+  };
 
   const getStatusStyle = (status) => {
     return status === 'pending'
@@ -41,33 +76,12 @@ const EIRApplications = () => {
     });
   };
 
-  const handleRatingChange = (value) => {
-    setRating(value);
-  };
-
-  const handleCommentChange = (event) => {
-    setComment(event.target.value);
-  };
-
-  const handleSubmitReview = async (appId) => {
-    try {
-      await axios.post(`http://localhost:4000/review/eir/${appId}/${reviewer}`, {
-        rating,
-        comment
-      });
-      alert('Review submitted successfully!');
-      setRating(0);
-      setComment('');
-      fetchEIRs(); // Refresh the data
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('Failed to submit review. Please try again.');
-    }
-  };
-
   return (
     <div className="max-w-screen-xl mx-auto p-8">
       <h1 className="text-3xl font-bold mb-6 text-purple-800">EIR Applications</h1>
+      {isLoading && <Loader />} {/* Show loader while loading */}
+      {toast.message && <Toast message={toast.message} type={toast.type} />} {/* Show toast */}
+
       {applications.map((app) => {
         const reviewStatus = app.reviews?.find(r => r.reviewer_id === reviewer)?.status || 'N/A';
         const isPending = reviewStatus === 'pending';

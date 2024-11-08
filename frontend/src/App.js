@@ -13,6 +13,7 @@ import ReviewerLogin from './components/reviewer/Login';
 import ReviewerPage from './components/admin/ReviewerPage'
 import NotFound from './components/NotFound';
 import ReviewerDashboard from './components/reviewer/Homr';
+import GrantsSelectReviewers from './components/admin/GrantsSelectReviewers'
 //helo
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path='/admin/login' element={<AdminLogin/>} />
         <Route path='/admin' element={<Admin />} />
         <Route path='/selectreviewers/:id' element={<ReviewerPage />} />
+        <Route path='/grants/selectreviewers/:id' element={<GrantsSelectReviewers />} />
         <Route path='/ad/analytics/:id' element={<AdAnalyticsDashboard />} />
         <Route path='/progress/:startup' element={<Progress/>} />
         <Route path='/reviewer/register' element={<ReviewerRegister />} />

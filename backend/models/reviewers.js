@@ -15,7 +15,9 @@ const reviewschema = mongoose.Schema({
     },
     organization:String,
     about:String,
-    reviews:[{id:String}]    
+    reviews:[{id:String}],    
+    grantsreviews:[{id:String}],    
+    scaleup:[{id:String}]    
 })
 
 const Review = mongoose.model('Reviewers', reviewschema)

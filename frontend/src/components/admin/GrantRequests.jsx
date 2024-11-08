@@ -1,10 +1,30 @@
 import { useEffect, useState } from 'react';
 
+import { ChevronDown, ChevronUp, Star } from 'lucide-react';
+import ReviewsPopup from './ReviewsPopup'
+
 export default function GrantApplicationComponent({ grantSchemes }) {
   const [openApplicant, setOpenApplicant] = useState(null);
   const [openProject, setOpenProject] = useState(null);
   const [updatedSchemes, setUpdatedSchemes] = useState(grantSchemes);
+  const [openSections, setOpenSections] = useState({});
 
+  const toggleSection = (requestId) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [requestId]: !prev[requestId],
+    }));
+  };
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved': return 'bg-green-200 text-green-800';
+      case 'Rejected': return 'bg-red-200 text-red-800';
+      case 'In Progress': return 'bg-yellow-200 text-yellow-800';
+      case 'Short Listed': return 'bg-blue-200 text-blue-800';
+      case 'Under Review': return 'bg-purple-200 text-purple-800';
+      default: return 'bg-gray-200 text-gray-800';
+    }
+  };
   const toggleProjectDropdown = (id) => {
     setOpenProject(openProject === id ? null : id);
   };
@@ -15,7 +35,6 @@ export default function GrantApplicationComponent({ grantSchemes }) {
 
   const updateGrantStatus = async (id, status, apiEndpoint) => {
     const isConfirmed = window.confirm(`Are you sure you want to mark this grant as ${status}?`);
-
     if (isConfirmed) {
       try {
         const response = await fetch(apiEndpoint, {
@@ -148,19 +167,25 @@ export default function GrantApplicationComponent({ grantSchemes }) {
           </div>
 
           <div className="mt-4 flex items-center">
-            <div className="flex-1">
-              <span
-                className={`px-3 py-1 rounded font-semibold ${
-                  scheme.grant_status.status === 'Approved'
-                    ? 'bg-green-200 text-green-800'
-                    : scheme.grant_status.status === 'Rejected'
-                    ? 'bg-red-200 text-red-800'
-                    : 'bg-yellow-200 text-yellow-800'
-                }`}
-              >
-                {scheme.grant_status.status}
-              </span>
-            </div>
+          <div className="flex-1">
+                <span
+                  className={`px-3 py-1 rounded font-semibold ${getStatusColor(scheme.grant_status?.status)}`}
+                >
+                  {scheme.grant_status?.status || 'N/A'}
+                </span>
+                <button
+                  className="text-lg font-semibold cursor-pointer flex items-center mt-4"
+                  onClick={() => toggleSection(scheme._id)}
+                >
+                  Reviews
+                  <span className="ml-2">
+                    {openSections[scheme._id] ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </span>
+                </button>
+                {openSections[scheme._id] && (
+                 <ReviewsPopup request ={scheme} toggle={toggleSection} reviews={scheme.reviews}/>
+                )}
+              </div>
 
             <div className="flex space-x-2">
               <button
@@ -196,8 +221,20 @@ export default function GrantApplicationComponent({ grantSchemes }) {
                 onClick={() => handleInProgress(scheme._id)}
                 disabled={scheme.grant_status.status === 'In Progress' || scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'}
               >
-                Mark as In Progress
+                Mark as ShortListed
               </button>
+            <a href={`/grants/selectreviewers/${scheme._id}`}>
+              <button
+                className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                  scheme.grant_status.status === 'In Progress' || scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={scheme.grant_status.status === 'In Progress' || scheme.grant_status.status === 'Approved' || scheme.grant_status.status === 'Rejected'}
+              >
+                Select Reviewers
+              </button>
+            </a>
             </div>
           </div>
         </div>

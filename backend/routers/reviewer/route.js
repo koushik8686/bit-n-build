@@ -4,6 +4,7 @@ const router = express.Router();
 const nodemailer= require('nodemailer')
 const senderemail = "hexart637@gmail.com";
 const EIR = require('../../models/EirSchema')
+const GrantRequests = require('../../models/GrandSchemeSchema')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -110,6 +111,22 @@ router.get('/:reviewerId/reviews', async (req, res) => {
     res.status(500).json({ message: 'An error occurred while fetching reviews', error: error.message });
   }
 });
+router.get('/:reviewerId/grantreviews', async (req, res) => {
+  try {
+    const reviewer = await Reviewer.findById(req.params.reviewerId);
+    if (!reviewer) {
+      return res.status(404).json({ message: 'Reviewer not found' });
+    }
+    // Populate review details from EIR documents
+    const reviews = await GrantRequests.find({
+      'reviews.reviewer_id': req.params.reviewerId
+    });
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while fetching reviews', error: error.message });
+  }
+});
 
 router.post('/eir/:eir/:reviewer' , async (req, res) => {
   try {
@@ -126,6 +143,30 @@ router.post('/eir/:eir/:reviewer' , async (req, res) => {
         }
       })
       eir.save().then((savedEir) => {
+        res.status(200).json(savedEir);
+      })
+      
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'An error occurred while'})
+  }
+})
+router.post('/grants/:grant/:reviewer' , async (req, res) => {
+  try {
+    GrantRequests.findById(req.params.grant).then((grant) => {
+      if (!grant) {
+        return res.status(404).json({ message: 'EIR not found' });
+      }
+      // Add new review to the EIR document
+      grant.reviews.forEach((review) => {
+        if (review.reviewer_id === req.params.reviewer) {
+          review.rating = req.body.rating;
+          review.comments.push(req.body.comment);
+          review.status="completed"
+        }
+      })
+      grant.save().then((savedEir) => {
         res.status(200).json(savedEir);
       })
       
