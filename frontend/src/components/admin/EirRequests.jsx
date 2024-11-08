@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Loader from '../Loader';
 import Toast from '../Toast';
 import { AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronUp, Star } from 'lucide-react';
+import ReviewsPopup from './ReviewsPopup'
 
 const EIRRequests = ({ eirRequests }) => {
   const [loading, setLoading] = useState(false);
@@ -10,6 +12,14 @@ const EIRRequests = ({ eirRequests }) => {
   const [updatedRequests, setUpdatedRequests] = useState(eirRequests);
   const [openRequest, setOpenRequest] = useState(null);
   const [disabledButtons, setDisabledButtons] = useState({});
+  const [openSections, setOpenSections] = useState({});
+
+  const toggleSection = (requestId) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [requestId]: !prev[requestId],
+    }));
+  };
 
   useEffect(() => {
     setUpdatedRequests(eirRequests.reverse());
@@ -37,11 +47,11 @@ const EIRRequests = ({ eirRequests }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ actionType, requestId }),
       });
-  
+
       if (!response.ok) throw new Error(`Failed to ${actionType} request`);
-  
+
       const updatedRequest = await response.json();
-  
+
       setUpdatedRequests((prev) =>
         prev.map((req) =>
           req._id === updatedRequest.updatedRequest._id ? updatedRequest.updatedRequest : req
@@ -50,20 +60,19 @@ const EIRRequests = ({ eirRequests }) => {
 
       setDisabledButtons((prev) => ({
         ...prev,
-        [requestId]: { ...prev[requestId], [actionType]: true }
+        [requestId]: { ...prev[requestId], [actionType]: true },
       }));
       setToast({ type: 'success', message: `${actionType.charAt(0).toUpperCase() + actionType.slice(1)}d successfully!` });
       setError(null);
     } catch (err) {
       setToast({
         type: 'error',
-        message: err.message || 'An unknown error occurred. Please try again.'
+        message: err.message || 'An unknown error occurred. Please try again.',
       });
     } finally {
       setLoading(false);
     }
   };
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'Approved': return 'bg-green-200 text-green-800';
@@ -119,6 +128,18 @@ const EIRRequests = ({ eirRequests }) => {
                 >
                   {request.status?.status || 'N/A'}
                 </span>
+                <button
+                  className="text-lg font-semibold cursor-pointer flex items-center mt-4"
+                  onClick={() => toggleSection(request._id)}
+                >
+                  Reviews
+                  <span className="ml-2">
+                    {openSections[request._id] ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </span>
+                </button>
+                {openSections[request._id] && (
+                 <ReviewsPopup request ={request} toggle={toggleSection} reviews={request.reviews}/>
+                )}
               </div>
 
               <div className="flex space-x-2">
@@ -152,14 +173,14 @@ const EIRRequests = ({ eirRequests }) => {
                   Mark Shortlisted
                 </button>
                 <a href={`/selectreviewers/${request._id}`}>
-                <button
-                  className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
-                    isDisabled.underReview ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  disabled={isDisabled.underReview}
-                >
-                  Select Reviewer
-                </button>
+                  <button
+                    className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
+                      isDisabled.underReview ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={isDisabled.underReview}
+                  >
+                    Select Reviewers
+                  </button>
                 </a>
               </div>
             </div>

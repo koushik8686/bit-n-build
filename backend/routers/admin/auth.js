@@ -94,6 +94,7 @@ router.post('/eir/selectreviewer/:requestId', async (req, res) => {
           reviewer_id: reviewer._id,
           reviewer_name: reviewer.name,
           status:"pending",
+          rating:0,
           reviewer_email: reviewer.email,
           reviewer_organization: reviewer.organization
         });
@@ -114,7 +115,8 @@ router.post('/eir/selectreviewer/:requestId', async (req, res) => {
       // Remove from EIR document reviews as well
       eirDocument.reviews = eirDocument.reviews.filter(review => review.reviewer_id.toString() !== reviewerId);
     }));
-
+    
+    eirDocument.status.status = "Under Review"
     // Save the updated EIR document
     await eirDocument.save();
 

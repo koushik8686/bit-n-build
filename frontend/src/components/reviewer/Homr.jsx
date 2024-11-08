@@ -11,7 +11,7 @@ export default function ReviewerHome() {
   const [selectedTab, setSelectedTab] = useState('eirrequests')
   const [eirRequests, setEirRequests] = useState([])
   const [grantRequests, setGrantRequests] = useState([])
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
   const reviewer = Cookie.get('reviewer')
 
 

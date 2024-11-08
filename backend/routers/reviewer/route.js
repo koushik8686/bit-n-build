@@ -122,6 +122,7 @@ router.post('/eir/:eir/:reviewer' , async (req, res) => {
         if (review.reviewer_id === req.params.reviewer) {
           review.rating = req.body.rating;
           review.comments.push(req.body.comment);
+          review.status="completed"
         }
       })
       eir.save().then((savedEir) => {

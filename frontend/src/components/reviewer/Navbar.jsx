@@ -16,7 +16,7 @@ export default function Navbar({ selectedTab, setSelectedTab, isExpanded, setIsE
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    Cookie.remove('admin');
+    Cookie.remove('reviewer');
     navigate('/'); // Redirect after logout
   };
 
