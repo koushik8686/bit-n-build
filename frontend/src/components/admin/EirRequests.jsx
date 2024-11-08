@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import Loader from '../Loader';
+import Toast from '../Toast';
+import { AnimatePresence } from 'framer-motion';
 
 const EIRRequests = ({ eirRequests }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
   const [updatedRequests, setUpdatedRequests] = useState(eirRequests);
   const [openRequest, setOpenRequest] = useState(null);
   const [disabledButtons, setDisabledButtons] = useState({});
@@ -11,6 +15,15 @@ const EIRRequests = ({ eirRequests }) => {
     setUpdatedRequests(eirRequests.reverse());
   }, [eirRequests]);
 
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   const toggleRequestDetails = (id) => {
     setOpenRequest(openRequest === id ? null : id);
   };
@@ -18,7 +31,6 @@ const EIRRequests = ({ eirRequests }) => {
   const handleRequestUpdate = async (actionType, requestId) => {
     setLoading(true);
     try {
-      // Use the unified route for updating status
       const apiEndpoint = `/admin/eir/update-status`;
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -30,30 +42,47 @@ const EIRRequests = ({ eirRequests }) => {
   
       const updatedRequest = await response.json();
   
-      // Update the request status in the state
       setUpdatedRequests((prev) =>
         prev.map((req) =>
           req._id === updatedRequest.updatedRequest._id ? updatedRequest.updatedRequest : req
         )
       );
-  
-      // Disable the button for the performed action
-      const disableConfig = { [actionType]: true };
-      setDisabledButtons((prev) => ({ ...prev, [requestId]: disableConfig }));
+
+      setDisabledButtons((prev) => ({
+        ...prev,
+        [requestId]: { ...prev[requestId], [actionType]: true }
+      }));
+      setToast({ type: 'success', message: `${actionType.charAt(0).toUpperCase() + actionType.slice(1)}d successfully!` });
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setToast({
+        type: 'error',
+        message: err.message || 'An unknown error occurred. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved': return 'bg-green-200 text-green-800';
+      case 'Rejected': return 'bg-red-200 text-red-800';
+      case 'In Progress': return 'bg-yellow-200 text-yellow-800';
+      case 'Short Listed': return 'bg-blue-200 text-blue-800';
+      case 'Under Review': return 'bg-purple-200 text-purple-800';
+      default: return 'bg-gray-200 text-gray-800';
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {loading && <Loader />}
       <h1 className="text-3xl font-bold mb-6">EIR Requests</h1>
-      {error && <p className="text-red-500">{error}</p>}
-      {loading && <p>Loading...</p>}
+
+      <AnimatePresence>
+        {toast && <Toast message={toast.message} type={toast.type} />}
+      </AnimatePresence>
 
       {updatedRequests.map((request) => {
         const isDisabled = disabledButtons[request._id] || {};
@@ -75,35 +104,18 @@ const EIRRequests = ({ eirRequests }) => {
 
             {openRequest === request._id && (
               <div className="mt-4 bg-gray-100 p-4 rounded-lg">
-                <p>
-                  <strong>Entrepreneur:</strong> {request.entrepreneur?.name || 'N/A'}
-                </p>
-                <p>
-                  <strong>Business Idea:</strong> {request.business_idea || 'N/A'}
-                </p>
-                <p>
-                  <strong>Summary:</strong> {request.summary || 'N/A'}
-                </p>
-                <p>
-                  <strong>Mentorship Startups:</strong>{' '}
-                  {request.objectives?.mentorship_startups?.join(', ') || 'N/A'}
-                </p>
-                <p>
-                  <strong>Personal Goals:</strong> {request.objectives?.personal_goals || 'N/A'}
-                </p>
+                <p><strong>Entrepreneur:</strong> {request.entrepreneur?.name || 'N/A'}</p>
+                <p><strong>Business Idea:</strong> {request.business_idea || 'N/A'}</p>
+                <p><strong>Summary:</strong> {request.summary || 'N/A'}</p>
+                <p><strong>Mentorship Startups:</strong> {request.objectives?.mentorship_startups?.join(', ') || 'N/A'}</p>
+                <p><strong>Personal Goals:</strong> {request.objectives?.personal_goals || 'N/A'}</p>
               </div>
             )}
 
             <div className="mt-4 flex items-center">
               <div className="flex-1">
                 <span
-                  className={`px-3 py-1 rounded font-semibold ${
-                    request.status?.status === 'Accepted'
-                      ? 'bg-green-200 text-green-800'
-                      : request.status?.status === 'Rejected'
-                      ? 'bg-red-200 text-red-800'
-                      : 'bg-yellow-200 text-yellow-800'
-                  }`}
+                  className={`px-3 py-1 rounded font-semibold ${getStatusColor(request.status?.status)}`}
                 >
                   {request.status?.status || 'N/A'}
                 </span>
@@ -112,10 +124,10 @@ const EIRRequests = ({ eirRequests }) => {
               <div className="flex space-x-2">
                 <button
                   className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
-                    isDisabled.accept ? 'opacity-50 cursor-not-allowed' : ''
+                    isDisabled.approve ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  onClick={() => handleRequestUpdate('accept', request._id)}
-                  disabled={isDisabled.accept}
+                  onClick={() => handleRequestUpdate('approve', request._id)}
+                  disabled={isDisabled.approve}
                 >
                   Accept
                 </button>
@@ -129,25 +141,26 @@ const EIRRequests = ({ eirRequests }) => {
                 >
                   Reject
                 </button>
+
                 <button
                   className={`bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
-                    isDisabled.shortListed ? 'opacity-50 cursor-not-allowed' : ''
+                    isDisabled.shortlist ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  onClick={() => handleRequestUpdate('short-listed', request._id)}
-                  disabled={isDisabled.shortListed}
+                  onClick={() => handleRequestUpdate('shortlist', request._id)}
+                  disabled={isDisabled.shortlist}
                 >
                   Mark Shortlisted
                 </button>
-
+                <a href={`/selectreviewers/${request._id}`}>
                 <button
                   className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded shadow-md transition-colors ${
                     isDisabled.underReview ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  onClick={() => handleRequestUpdate('under-review', request._id)}
                   disabled={isDisabled.underReview}
                 >
-                  Under Review
+                  Select Reviewer
                 </button>
+                </a>
               </div>
             </div>
           </div>

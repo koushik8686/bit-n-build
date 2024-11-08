@@ -6,7 +6,8 @@ const EIRSchema = new Schema({
   startup_name: { type: String, required: true },            // Name of the startup// Startup ID for identification
   entrepreneur: {
     name: { type: String, required: true },                    // Entrepreneur's name
-    background: { type: String, required: true },              // Description of experience or expertise
+    background: { type: String, required: true },   
+    email:{type:String , required:true},       // Description of experience or expertise
     previous_ventures: [{ type: String }],                     // List of previous ventures or startups
     industry_experience: { type: String },                     // Industry the entrepreneur has experience in
   },
@@ -35,7 +36,9 @@ const EIRSchema = new Schema({
   reviews:[{
     reviewer_id: { type: String},
     reviewer_name: { type: String },
-    reviewer_name_type: { type: String},
+    reviewer_email: { type: String },
+    status:String,
+    reviewer_organization: { type: String},
     review_date: { type: Date },
     rating: { type: Number },
     comments: [{ type: String }]    

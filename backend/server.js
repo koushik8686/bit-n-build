@@ -35,6 +35,7 @@ app.use("/user", require("./routers/user/home"));
 app.use("/submit", require("./routers/user/forms"));
 app.use("/get" , require("./routers/admin/Data"))
 app.use('/ads/' , require('./routers/advertisement/advertisement'))
+app.use('/review/' , require('./routers/reviewer/route'))
 
 // Simple route for testing
 app.get('/', (req, res) => {

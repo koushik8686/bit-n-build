@@ -11,6 +11,8 @@ import StartupMessages from './Messages'
 import AdsComponent from './Ads'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import Reviewrs from './Reviewrs'
+import Reviewers from './Reviewrs'
 
 
 export default function Admin() {
@@ -143,6 +145,8 @@ export default function Admin() {
         {selectedTab === 'eirrequests' && <EIRRequests eirRequests={eirRequests} />}
 
         {selectedTab === 'budgetrequests' && <GrantApplicationComponent grantSchemes={grantRequests} />}
+       
+        {selectedTab === 'reviewers' && <Reviewers />}
 
         {selectedTab === 'messages' && <StartupMessages />}
 

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const reviewschema = mongoose.Schema({
-    username:{
+    name:{
         type:String,
         required:true
     },
@@ -12,6 +12,12 @@ const reviewschema = mongoose.Schema({
     password:{
         type:String,
         required:true
-    }
-    
+    },
+    organization:String,
+    about:String,
+    reviews:[{id:String}]    
 })
+
+const Review = mongoose.model('Reviewers', reviewschema)
+
+module.exports = Review

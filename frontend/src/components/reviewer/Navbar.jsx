@@ -7,16 +7,12 @@ import { Home, Users, FileText, Mail, ChevronRight, LogOut, Megaphone, User } fr
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
-  { name: 'Startups', icon: Home },
   { name: 'EIR Requests', icon: Users },
-  { name: 'Budget Requests', icon: FileText },
-  { name: 'Reviewers', icon: User },  // Added 'User' icon for Reviewers
-  { name: 'Messages', icon: Mail },
-  { name: 'Ads', icon: Megaphone }, 
+  { name: 'grantrequests', icon: FileText },
   { name: 'Logout', icon: LogOut }, 
 ];
 
-export default function AdminNavbar({ selectedTab, setSelectedTab, isExpanded, setIsExpanded }) {
+export default function Navbar({ selectedTab, setSelectedTab, isExpanded, setIsExpanded }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -29,8 +25,8 @@ export default function AdminNavbar({ selectedTab, setSelectedTab, isExpanded, s
       initial={{ width: 250 }}
       animate={{ width: isExpanded ? 250 : 80 }}
       transition={{ duration: 0.3 }}
-      className="h-screen bg-gradient-to-b from-purple-700 via-purple-600 to-indigo-700 text-white shadow-lg"
-    >
+      className="h-screen bg-gradient-to-b from-teal-600 via-teal-500 to-green-500 text-white shadow-lg"
+      >
       <div className="p-6">
         <motion.h1
           initial={{ opacity: 1 }}
@@ -38,7 +34,7 @@ export default function AdminNavbar({ selectedTab, setSelectedTab, isExpanded, s
           transition={{ duration: 0.2 }}
           className="text-2xl font-bold"
         >
-          {isExpanded ? 'Admin Dashboard' : ''}
+          {isExpanded ? 'Reviewer Dashboard' : ''}
         </motion.h1>
       </div>
       <div className="flex justify-between p-4">

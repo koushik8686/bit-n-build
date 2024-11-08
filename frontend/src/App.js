@@ -8,6 +8,11 @@ import Login from './components/user/Login';
 import Progress from './components/admin/Progress'
 import Temp from './components/admin/Temp';
 import AdAnalyticsDashboard from './components/admin/AdAnalytics';
+import ReviewerRegister from './components/reviewer/Register';
+import ReviewerLogin from './components/reviewer/Login';
+import ReviewerPage from './components/admin/ReviewerPage'
+import NotFound from './components/NotFound';
+import ReviewerDashboard from './components/reviewer/Homr';
 //helo
 function App() {
   return (
@@ -21,8 +26,13 @@ function App() {
         <Route path='/temp' element={<Temp />} />
         <Route path='/admin/login' element={<AdminLogin/>} />
         <Route path='/admin' element={<Admin />} />
+        <Route path='/selectreviewers/:id' element={<ReviewerPage />} />
         <Route path='/ad/analytics/:id' element={<AdAnalyticsDashboard />} />
         <Route path='/progress/:startup' element={<Progress/>} />
+        <Route path='/reviewer/register' element={<ReviewerRegister />} />
+        <Route path='/reviewer/login' element={<ReviewerLogin />} />
+        <Route path='/reviewer' element={<ReviewerDashboard />} />
+        <Route path='*' element={<NotFound/>} />
        </Routes>
       </BrowserRouter>
     </div>

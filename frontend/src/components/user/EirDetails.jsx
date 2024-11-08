@@ -13,6 +13,7 @@ export default function Component({ eirList }) {
 
   const [startup_id] = useState(startup || '')
   const [entrepreneurName, setEntrepreneurName] = useState('')
+  const [entrepreneurEmail, setEntrepreneurEmail] = useState('')
   const [entrepreneurBackground, setEntrepreneurBackground] = useState('')
   const [entrepreneurIndustryExperience, setEntrepreneurIndustryExperience] = useState('')
   const [previousVentures, setPreviousVentures] = useState([''])
@@ -43,6 +44,7 @@ export default function Component({ eirList }) {
       entrepreneur: {
         name: entrepreneurName,
         background: entrepreneurBackground,
+        email:entrepreneurEmail,
         industry_experience: entrepreneurIndustryExperience,
         previous_ventures: previousVentures,
       },
@@ -62,7 +64,16 @@ export default function Component({ eirList }) {
       alert('An error occurred while submitting the form. Please try again.')
     }
   }
-
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved': return 'bg-green-200 text-green-800';
+      case 'Rejected': return 'bg-red-200 text-red-800';
+      case 'In Progress': return 'bg-yellow-200 text-yellow-800';
+      case 'Short Listed': return 'bg-blue-200 text-blue-800';
+      case 'Under Review': return 'bg-purple-200 text-purple-800';
+      default: return 'bg-gray-200 text-gray-800';
+    }
+  };
   const getStatusClass = (status) => {
     switch (status) {
       case 'Applied':
@@ -134,9 +145,13 @@ export default function Component({ eirList }) {
                   <p className="text-gray-700">
                     <strong>Entrepreneur:</strong> {eir.entrepreneur.name}
                   </p>
-                  <p className={`mt-2 ${getStatusClass(eir.status.status)}`}>
-                    <strong>Status:</strong> {eir.status.status}
-                  </p>
+                   <div className="flex-1">
+                <span
+                  className={`px-3 py-1 rounded font-semibold ${getStatusColor(eir.status?.status)}`}
+                >
+                  {eir.status?.status || 'N/A'}
+                </span>
+              </div>
                   <p className="text-gray-700 mt-2">
                     <strong>Personal Goals:</strong> {eir.objectives.personal_goals || 'No goals provided.'}
                   </p>
@@ -173,6 +188,16 @@ export default function Component({ eirList }) {
                     type="text"
                     value={entrepreneurName}
                     onChange={(e) => setEntrepreneurName(e.target.value)}
+                    className="border border-gray-300 p-2 w-full rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-1">Email</label>
+                  <input
+                    type="text"
+                    value={entrepreneurEmail}
+                    onChange={(e) => setEntrepreneurEmail(e.target.value)}
                     className="border border-gray-300 p-2 w-full rounded"
                     required
                   />
