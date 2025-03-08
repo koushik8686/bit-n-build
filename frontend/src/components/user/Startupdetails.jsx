@@ -8,36 +8,115 @@ import Cookie from 'js-cookie'
 export default function StartupDetails({ kyc, progress }) {
   const limitedProgress = progress.slice(0, 4)
   const [ad, setAds] = useState([])
+  const [isEditing, setIsEditing] = useState(false)
+  const [formData, setFormData] = useState({
+    company_name: kyc.company_name || '',
+    industry: kyc.company_details.industry || '',
+    address: kyc.address || '',
+    contact_name: kyc.contact_person.name || '',
+    contact_email: kyc.contact_person.email || '',
+    contact_phone: kyc.contact_person.phone || '',
+    website: kyc.company_details.website || '',
+    incorporation_date: kyc.company_details.incorporation_date || '',
+    pan_number: kyc.company_details.pan_number || '',
+    about: kyc.company_details.about || ''
+  })
+
+  const [updatedKYC, setUpdatedKYC] = useState(kyc)
 
   const startup = Cookie.get('startup')
+
   // Fetch ads data
   async function fetchAd() {
     try {
       const response = await axios.get('http://localhost:4000/ads/get/ad')
       setAds(response.data)
     } catch (error) {
-      console.error("Error fetching ads:", error)
+      console.error('Error fetching ads:', error)
     }
   }
-
 
   // Handle ad click
   async function handleAdClick(adId, link) {
     try {
-      // Send POST request on ad click
-      await axios.post(`http://localhost:4000/ads/click/${adId}` , {startup})
+      await axios.post(`http://localhost:4000/ads/click/${adId}`, { startup })
       window.open(link, '_blank')
     } catch (error) {
-      console.error("Error handling ad click:", error)
+      console.error('Error handling ad click:', error)
     }
   }
+
+  // Handle form input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Handle form submission
+  const handleSubmit = () => {
+  // Update the state with the new form data
+  setUpdatedKYC({
+    ...updatedKYC,
+    company_name: formData.company_name,
+    address: formData.address,
+    company_details: {
+      ...updatedKYC.company_details,
+      industry: formData.industry,
+      website: formData.website,
+      incorporation_date: formData.incorporation_date,
+      pan_number: formData.pan_number,
+      about: formData.about
+    },
+    contact_person: {
+      name: formData.contact_name,
+      email: formData.contact_email,
+      phone: formData.contact_phone
+    }
+  });
+
+  setIsEditing(false);
+
+  // Send POST request to the backend with updated details
+  fetch(`http://localhost:4000/user/home/${formData.company_name}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      company_name: formData.company_name,
+      address: formData.address,
+      company_details: {
+        industry: formData.industry,
+        website: formData.website,
+        incorporation_date: formData.incorporation_date,
+        pan_number: formData.pan_number,
+        about: formData.about
+      },
+      contact_person: {
+        name: formData.contact_name,
+        email: formData.contact_email,
+        phone: formData.contact_phone
+      }
+    })
+  })
+    .then(response => response.json())
+    .then(data => {
+      // Handle successful response
+      console.log('Data updated successfully:', data);
+    })
+    .catch(error => {
+      // Handle error
+      console.error('Error updating data:', error);
+    });
+};
+
+
   useEffect(() => {
     fetchAd()
     const adInterval = setInterval(() => {
       fetchAd()
     }, 5000)
 
-    // Clear interval on component unmount
     return () => clearInterval(adInterval)
   }, [])
 
@@ -52,41 +131,163 @@ export default function StartupDetails({ kyc, progress }) {
         {/* Left column: Startup Details */}
         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg shadow-md overflow-hidden">
           <div className="p-4 md:p-5">
-            <div className="flex items-center space-x-3 pb-3">
-              <div className="w-20 h-20 rounded-full overflow-hidden shadow-sm">
-                <img 
-                  src={`http://localhost:4000/uploads/profiles/${kyc.profile_picture}`} 
-                  alt={kyc.company_name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-800">{kyc.company_name}</h2>
-                <p className="text-gray-500 text-sm">{kyc.company_details.industry}</p>
-              </div>
-            </div>
-            <div className="space-y-3 text-gray-600 text-sm">
-              <p><strong>Address:</strong> {kyc.address}</p>
-              <p><strong>Contact Person:</strong> {kyc.contact_person.name}</p>
-              <p><strong>Email:</strong> {kyc.contact_person.email}</p>
-              <p><strong>Phone:</strong> {kyc.contact_person.phone}</p>
-              <p>
-                <strong>Website:</strong>{" "}
-                <a 
-                  href={kyc.company_details.website} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="text-teal-500 hover:text-teal-700 transition-colors duration-300"
-                >
-                  {kyc.company_details.website}
-                </a>
-              </p>
-            </div>
+            {isEditing ? (
+  <form className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Company Name</label>
+      <input
+        type="text"
+        name="company_name"
+        value={formData.company_name}
+        onChange={handleInputChange}
+        disabled // This makes the field visible but not editable
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Industry</label>
+      <input
+        type="text"
+        name="industry"
+        value={formData.industry}
+        onChange={handleInputChange}
+        disabled // This makes the field visible but not editable
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Address</label>
+      <input
+        type="text"
+        name="address"
+        value={formData.address}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Contact Name</label>
+      <input
+        type="text"
+        name="contact_name"
+        value={formData.contact_name}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Email</label>
+      <input
+        type="email"
+        name="contact_email"
+        value={formData.contact_email}
+        onChange={handleInputChange}
+        disabled // This makes the field visible but not editable
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Phone</label>
+      <input
+        type="text"
+        name="contact_phone"
+        value={formData.contact_phone}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Website</label>
+      <input
+        type="text"
+        name="website"
+        value={formData.website}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Incorporation Date</label>
+      <input
+        type="date"
+        name="incorporation_date"
+        value={formData.incorporation_date}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">PAN Number</label>
+      <input
+        type="text"
+        name="pan_number"
+        value={formData.pan_number}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">About</label>
+      <textarea
+        name="about"
+        value={formData.about}
+        onChange={handleInputChange}
+        className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm"
+      ></textarea>
+    </div>
+    <button
+      type="button"
+      className="px-4 py-2 bg-teal-500 text-white rounded-md shadow hover:bg-teal-600 transition duration-300"
+      onClick={handleSubmit}
+    >
+      Save
+    </button>
+  </form>
+) : (
+  <div>
+    <div className="flex items-center justify-between pb-3">
+      <div className="flex items-center space-x-3">
+        <div className="w-20 h-20 rounded-full overflow-hidden shadow-sm">
+          <img
+            src={`http://localhost:4000/uploads/profiles/${updatedKYC.profile_picture}`}
+            alt={updatedKYC.company_name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800">{updatedKYC.company_name}</h2>
+          <p className="text-gray-500 text-sm">{updatedKYC.company_details.industry}</p>
+        </div>
+      </div>
+      <button
+        className="px-4 py-2 bg-teal-500 text-white rounded-md shadow hover:bg-teal-600 transition duration-300"
+        onClick={() => setIsEditing(true)}
+      >
+        Edit
+      </button>
+    </div>
+    <div className="space-y-3 text-gray-600 text-sm">
+      <p><strong>Address:</strong> {updatedKYC.address}</p>
+      <p><strong>Contact Person:</strong> {updatedKYC.contact_person.name} ({updatedKYC.contact_person.email}, {updatedKYC.contact_person.phone})</p>
+      <p><strong>Website:</strong> {updatedKYC.company_details.website}</p>
+      <p><strong>Incorporation Date:</strong> {new Date(updatedKYC.company_details.incorporation_date).toLocaleDateString()}</p>
+      <p><strong>PAN Number:</strong> {updatedKYC.company_details.pan_number}</p>
+      <p><strong>About:</strong> {updatedKYC.company_details.about}</p>
+    </div>
+  </div>
+)}
+
           </div>
         </div>
 
-        {/* Right column: Progress List */}
-        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg shadow-md overflow-hidden">
+        {/* Right Column */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-6"
+        >
+          <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg shadow-md overflow-hidden">
           <div className="p-4 md:p-5">
             <h3 className="text-xl font-semibold mb-3 text-gray-800">Latest Progress</h3>
             <div className="space-y-3 max-h-72 overflow-y-auto">
@@ -112,10 +313,10 @@ export default function StartupDetails({ kyc, progress }) {
             </div>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Ads Section */}
-      <motion.div
+        {/* Ad Section */}
+        <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.5 }}
@@ -140,6 +341,7 @@ export default function StartupDetails({ kyc, progress }) {
               </div>
             </motion.div>
         </div>
+      </motion.div>
       </motion.div>
     </div>
   )

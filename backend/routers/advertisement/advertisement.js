@@ -5,7 +5,6 @@ const existingads= require('../../models/advertisements')
 const startups = require('../../models/startupmodel')
 const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
-
 const auth = new google.auth.GoogleAuth({
   keyFile: './sheetskey.json', // Replace with the path to your JSON key file
   scopes: [

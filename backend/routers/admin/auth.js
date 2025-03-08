@@ -16,6 +16,30 @@ const transporter = nodemailer.createTransport({
         pass: 'zetk dsdm imvx keoa'
     }
 });
+async function sendReviewNotification(email, name) {
+  const mailOptions = {
+    from: 'your-email@example.com', // Your email address
+    to: email,
+    subject: 'New Review Assignment',
+    html: `
+      <p>Hello ${name},</p>
+      <p>You have been assigned a new review. Please click the button below to log in and check the details:</p>
+      <a href="http://localhost:3000/reviewer/login" style="
+          display: inline-block;
+          padding: 10px 20px;
+          margin-top: 10px;
+          font-size: 16px;
+          color: #ffffff;
+          background-color: #007bff;
+          text-decoration: none;
+          border-radius: 5px;
+      ">Login to Review</a>
+      <p>Thank you.</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 // User login
 router.post('/login', async (req, res) => {
@@ -62,14 +86,14 @@ router.get('/eir/:id', async (req, res) => {
 router.post('/eir/selectreviewer/:requestId', async (req, res) => {
   try {
     const requestId = req.params.requestId;
-    const selectedReviewerIds = req.body; // Array of currently selected reviewer IDs
+    const selectedReviewerIds = req.body; // Array of selected reviewer IDs
 
     const eirDocument = await EIR.findById(requestId);
     if (!eirDocument) {
       return res.status(404).json({ message: 'EIR document not found' });
     }
 
-    // Current reviewers in EIR document
+    // Current reviewers in the EIR document
     const currentReviewerIds = eirDocument.reviews.map(review => review.reviewer_id.toString());
 
     // Determine reviewers to add and remove
@@ -87,16 +111,19 @@ router.post('/eir/selectreviewer/:requestId', async (req, res) => {
       if (!reviewer.reviews.some(review => review.id === requestId)) {
         reviewer.reviews.push({ id: requestId });
         await reviewer.save();
-
+        
         // Add reviewer details to the EIR document
         eirDocument.reviews.push({
           reviewer_id: reviewer._id,
           reviewer_name: reviewer.name,
-          status:"pending",
-          rating:0,
+          status: "pending",
+          rating: 0,
           reviewer_email: reviewer.email,
           reviewer_organization: reviewer.organization
         });
+
+        // Send notification email to the reviewer
+        await sendReviewNotification(reviewer.email, reviewer.name);
       }
     }));
 
@@ -115,7 +142,7 @@ router.post('/eir/selectreviewer/:requestId', async (req, res) => {
       eirDocument.reviews = eirDocument.reviews.filter(review => review.reviewer_id.toString() !== reviewerId);
     }));
 
-    eirDocument.status.status = "Under Review"
+    eirDocument.status.status = "Under Review";
     // Save the updated EIR document
     await eirDocument.save();
 

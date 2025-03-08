@@ -56,7 +56,7 @@ export default function Component({ eirList }) {
     }
 
     try {
-      const response = await axios.post(`/submit/eir/${startup}`, formData)
+      const response = await axios.post(`http:localhost:4000/submit/eir/${startup}`, formData)
       console.log('Form Data Submitted:', formData)
       closeModal()
     } catch (error) {
